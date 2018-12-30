@@ -32,7 +32,7 @@ int yyleng = 1; // length of last matched string or 1
  */
 
 /** Idee: Harte Substring Suche für definierte Worte
- * --*, end, array, of, int, return, if, then, else, while, do, var, not, or, := (vorsicht bei letztem: muss nach lexemchar geprüft werden
+ * --*, end, array, of, int, return, if, then, else, while, do, var, not, or
  */
 
 const char * keywords[] = {
@@ -69,28 +69,20 @@ signed char cur_key_index[] = {
 
 
 unsigned long match_keyword(char *current_char) {
-	//printf("%c :", *current_char);
 	
 	for(int i=0; i<13; i++) {
 		
-		// printf("%d %s\n", i, keywords[i]);
-		
 		if(keywords[i][cur_key_index[i] + 1] == *current_char) {
-			
-			//printf("  %c", keywords[i][cur_key_index[i] + 1]);
 			
 			cur_key_index[i] += 1;
 			if(cur_key_index[i] + 1 == strlen(keywords[i])) {
-				// printf("\n# %s\n", keywords[i]);
 				reset_match_keyword();
 				return i + 256;
 			}
 		} else {
-			//printf(" !%c", keywords[i][cur_key_index[i] + 1]);
 			cur_key_index[i] = -1;
 		} // */
 	}
-	// printf("\n");
 	return 0;
 }
 
@@ -106,6 +98,55 @@ void reset_match_keyword() {
  * ;(),:<#[]-+*
  */
 
+const char * lexem_char = ";(),:<#[]-+*";
+
+unsigned long match_lexem_char(char *current_char) {
+	for(int i = 0; i < 12; i++) {
+		if(*current_char == lexem_char[i]) {
+			return *current_char;
+			//unsigned long value = (unsigned long) *current_char - '0';
+			//printf("# %c %ld\n", *current_char, value);
+			//return value;
+		}
+	}
+	return 0;
+}
+
+/**
+ * Lexem char matcht allein mit : ?
+ */
+
+int assign_op_pos = 0;
+
+unsigned long match_assign_op(char *current_char) {
+	if(*current_char == ':') {
+		assign_op_pos = 1;
+	} else if(assign_op_pos && *current_char == '=') {
+		assign_op_pos = 0;
+		return 269;
+	} else {
+		assign_op_pos = 0;
+	}
+	return 0;
+}
+
+/**
+ * Probleme: Match für jedes Zeichen eines Kommentars und andere Zeichen des Kommentars trigger uU. 
+ * z.B. match_lexem_char
+ */
+
+int comment_pos = 0;
+
+unsigned long match_comment(char *current_char) {
+	if(*current_char == '-') {
+		comment_pos += 1;
+	} else if(comment_pos == 2 && *current_char != '\n') {
+		return 1;
+	} else {
+		comment_pos = 0;
+	}
+	return 0;
+}
 
 /*
 	Calculates hash of string
@@ -163,17 +204,47 @@ unsigned long apply_rule(char *remaining_string) {
 	// TODO: return applied rule (see enum values) or -1 if no match
 	
 	 
-	//printf("%c", *remaining_string);
+	// printf("\n%c", *remaining_string);
 	
-	unsigned long value = match_keyword(remaining_string);
+	unsigned long value = 0;
+	
+	value = match_keyword(remaining_string);
 	if(value > 0) {
-		printf("%ld\n", value);
+		printf("MK: %ld\n", value);
+		
+		match_lexem_char(remaining_string);
+		match_assign_op(remaining_string);
+		match_comment(remaining_string);
+		
 		return value;
-	} // */
+	}
 	
-	//printf("%c\n", *remaining_string);
+	value = match_lexem_char(remaining_string);
+	if(value > 0) {
+		printf("LC: %ld\n", value);
+		
+		match_assign_op(remaining_string);
+		match_comment(remaining_string);
+		
+		return value;
+	}
 	
-	return -1;
+	value = match_assign_op(remaining_string);
+	if(value > 0) {
+		printf("AO: %ld\n", value);
+		
+		match_comment(remaining_string);
+		
+		return value;
+	}
+	
+	value = match_comment(remaining_string);
+	if(value > 0) {
+		printf("CO: %c\n", *remaining_string);
+		return 0;
+	}
+	
+	return 0;
 }
 
 int main(int argc, char *argv[]) {
