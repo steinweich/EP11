@@ -9,20 +9,19 @@ int eof = 0; // indicates end of file
 
 char* yytext; // last matched string
 int yyleng = 1; // length of last matched string or 1
-FILE *yyin; // input file
-FILE *yyout; // output file
 
 /*
 	Array of array of strings. Every array entry contains
 	an array of strings with same character length
 */
-char *keywords[] = {
-	{"or", "do", "if", "of"},
-	{"end", "int", "var", "not"},
-	{"then", "else"},
-	{"array", "while"},
-	{"return"}
-};
+// TODO: instantiate the correct way!
+// char *keywords[] = {
+// 	{"or", "do", "if", "of"},
+// 	{"end", "int", "var", "not"},
+// 	{"then", "else"},
+// 	{"array", "while"},
+// 	{"return"}
+// };
 
 /*
 	Calculates hash of string
@@ -49,7 +48,7 @@ unsigned long hash(char *s)
 char *read_file(char *filename) {
 	char *buffer = 0;
 	long length;
-	yyin = fopen(filename, "r");
+	FILE *yyin = fopen(filename, "r");
 
 	if (yyin) {
 	  fseek(yyin, 0, SEEK_END);
