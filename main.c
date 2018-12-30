@@ -23,6 +23,90 @@ int yyleng = 1; // length of last matched string or 1
 // 	{"return"}
 // };
 
+
+
+/** Idee: Finite State Automata programmieren für substring-suche
+ * DIGIT + ID + INTEGER + HEXDIGIT
+ * Effiziente Speicherdarstellung?
+ * Effiziente Navigation?
+ */
+
+/** Idee: Harte Substring Suche für definierte Worte
+ * --*, end, array, of, int, return, if, then, else, while, do, var, not, or, := (vorsicht bei letztem: muss nach lexemchar geprüft werden
+ */
+
+const char * keywords[] = {
+	"end",
+	"array",
+	"of",
+	"int",
+	"return",
+	"if",
+	"then",
+	"else",
+	"while",
+	"do",
+	"var",
+	"not",
+	"or"
+};
+
+signed char cur_key_index[] = {
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1
+};
+
+
+unsigned long match_keyword(char *current_char) {
+	//printf("%c :", *current_char);
+	
+	for(int i=0; i<13; i++) {
+		
+		// printf("%d %s\n", i, keywords[i]);
+		
+		if(keywords[i][cur_key_index[i] + 1] == *current_char) {
+			
+			//printf("  %c", keywords[i][cur_key_index[i] + 1]);
+			
+			cur_key_index[i] += 1;
+			if(cur_key_index[i] + 1 == strlen(keywords[i])) {
+				// printf("\n# %s\n", keywords[i]);
+				reset_match_keyword();
+				return i + 256;
+			}
+		} else {
+			//printf(" !%c", keywords[i][cur_key_index[i] + 1]);
+			cur_key_index[i] = -1;
+		} // */
+	}
+	// printf("\n");
+	return 0;
+}
+
+void reset_match_keyword() {
+	//printf("\n# Reset\n");
+	for(int i=0; i<13; i++) {
+		cur_key_index[i] = -1;
+	}
+}
+
+
+/** Einfacher Zeichenabgleich für lexem char
+ * ;(),:<#[]-+*
+ */
+
+
 /*
 	Calculates hash of string
 */
@@ -65,7 +149,7 @@ char *read_file(char *filename) {
 	return buffer;
 }
 
-int apply_rule(char *remaining_string) {
+unsigned long apply_rule(char *remaining_string) {
 	// NOTE: the parameter is the address of the current character (see for loop in main)
 	
 	// TODO: check if remaining_string starts with any keyword (see global variable 'keywords')
@@ -77,6 +161,18 @@ int apply_rule(char *remaining_string) {
 	// TODO: set yytext to anything recognizable (e.g. NULL) and yylengh to 1 (tells the for loop in the main function to continue with the next character)
 	
 	// TODO: return applied rule (see enum values) or -1 if no match
+	
+	 
+	//printf("%c", *remaining_string);
+	
+	unsigned long value = match_keyword(remaining_string);
+	if(value > 0) {
+		printf("%ld\n", value);
+		return value;
+	} // */
+	
+	//printf("%c\n", *remaining_string);
+	
 	return -1;
 }
 
@@ -95,7 +191,7 @@ int main(int argc, char *argv[]) {
 	// matched in the last iteration or 1 if no string matched in the last
 	// iteration
 	for (int i = 0; i < strlen(file_content); i+=yyleng) {
-		int result = apply_rule(&file_content[i]/* TODO: should provide substring from index i to end of file_content */);
+		unsigned long result = apply_rule(&file_content[i]/* TODO: should provide substring from index i to end of file_content */);
 		hash = (hash+result)*hashmult;
 	}
 	printf("%lx\n", hash);
