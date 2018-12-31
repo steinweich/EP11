@@ -5,25 +5,10 @@
 enum { END=256, ARRAY, OF, INT, RETURN, IF, THEN, ELSE, WHILE, DO, VAR,
  NOT, OR, ASSIGNOP };
 
-int eof = 0; // indicates end of file
-
 char* yytext; // last matched string
 int yyleng = 1; // length of last matched string or 1
 
-/*
-	Array of array of strings. Every array entry contains
-	an array of strings with same character length
-*/
-// TODO: instantiate the correct way!
-// char *keywords[] = {
-// 	{"or", "do", "if", "of"},
-// 	{"end", "int", "var", "not"},
-// 	{"then", "else"},
-// 	{"array", "while"},
-// 	{"return"}
-// };
-
-
+char *whitespaces = "\n\t ";
 
 /** Idee: Finite State Automata programmieren für substring-suche
  * DIGIT + ID + INTEGER + HEXDIGIT
@@ -67,6 +52,12 @@ signed char cur_key_index[] = {
 	-1
 };
 
+void reset_match_keyword() {
+	//printf("\n# Reset\n");
+	for(int i=0; i<13; i++) {
+		cur_key_index[i] = -1;
+	}
+}
 
 unsigned long match_keyword(char *current_char) {
 	
@@ -84,13 +75,6 @@ unsigned long match_keyword(char *current_char) {
 		} // */
 	}
 	return 0;
-}
-
-void reset_match_keyword() {
-	//printf("\n# Reset\n");
-	for(int i=0; i<13; i++) {
-		cur_key_index[i] = -1;
-	}
 }
 
 
@@ -148,6 +132,28 @@ unsigned long match_comment(char *current_char) {
 	return 0;
 }
 
+int is_comment(char *remaining_string) {
+	int comment_length = 0;
+	if (*remaining_string == '-' && *(remaining_string+1) == '-') {
+		char curr_char = *(remaining_string+2);
+		comment_length = 2;
+		while (curr_char != '\n' && curr_char != '\0') {
+			curr_char = *(remaining_string + ++comment_length);
+		}
+		if (curr_char == '\n') {
+			comment_length++;
+		}
+		yyleng = comment_length;
+		yytext = malloc(comment_length+1);
+		memcpy(yytext, remaining_string, comment_length+1);
+		yytext[comment_length+1] = '\0';
+		return 1;
+	} else {
+		yyleng = 1;
+		return 0;
+	}
+}
+
 /*
 	Calculates hash of string
 */
@@ -182,11 +188,10 @@ char *read_file(char *filename) {
 	  buffer = malloc(length + 1);
 	  if (buffer) {
 	    fread(buffer, 1, length, yyin);
-	  }
-	  // do not close yet ...
-	  // fclose(yyin);
 	}
-
+	  fclose(yyin);
+	}
+	buffer[length] = '\0';
 	return buffer;
 }
 
@@ -261,8 +266,26 @@ int main(int argc, char *argv[]) {
 	// yyleng is modified in apply_rules(). yyleng is the length of the string
 	// matched in the last iteration or 1 if no string matched in the last
 	// iteration
+	int count = 0;
 	for (int i = 0; i < strlen(file_content); i+=yyleng) {
-		unsigned long result = apply_rule(&file_content[i]/* TODO: should provide substring from index i to end of file_content */);
+		// skip comments
+		if (is_comment(&file_content[i])) {
+			// yytext and yyleng are set in is_comment(char*)
+			continue;
+		}
+		// skip whitespaces
+		if (strchr(whitespaces, file_content[i])) {
+			yyleng = 1;
+			yytext[0] = file_content[i];
+			yytext[1] = '\0';
+			continue;
+		}
+		// TODO: if apply_rule() works, use this line of code
+		//unsigned long result = apply_rule(&file_content[i]);
+		
+		// TODO: until apply_rule() works as accepted, result is 1 for every character
+		unsigned long result = 1;
+		
 		hash = (hash+result)*hashmult;
 	}
 	printf("%lx\n", hash);
