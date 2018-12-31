@@ -5,7 +5,7 @@
 enum { END=256, ARRAY, OF, INT, RETURN, IF, THEN, ELSE, WHILE, DO, VAR,
  NOT, OR, ASSIGNOP };
 
-char* yytext; // last matched string
+char* yytext = NULL; // last matched string
 int yyleng = 1; // length of last matched string or 1
 
 char *whitespaces = "\n\t ";
@@ -52,6 +52,17 @@ signed char cur_key_index[] = {
 	-1
 };
 
+void reset_yytext() {
+	yytext = malloc(1);
+	yytext[0] = '\0';
+}
+
+void set_yytext(const char *string, size_t n) {
+	yytext = malloc(n+1);
+	memcpy(yytext, string, n+1);
+	yytext[n+1] = '\0';
+}
+
 void reset_match_keyword() {
 	//printf("\n# Reset\n");
 	for(int i=0; i<13; i++) {
@@ -60,20 +71,40 @@ void reset_match_keyword() {
 }
 
 unsigned long match_keyword(char *current_char) {
-	
-	for(int i=0; i<13; i++) {
-		
-		if(keywords[i][cur_key_index[i] + 1] == *current_char) {
-			
-			cur_key_index[i] += 1;
-			if(cur_key_index[i] + 1 == strlen(keywords[i])) {
-				reset_match_keyword();
-				return i + 256;
+	// BENEDIKT'S SOLUTION
+	//
+	// for(int i=0; i<13; i++) {
+	//
+	// 	if(keywords[i][cur_key_index[i] + 1] == *current_char) {
+	//
+	// 		cur_key_index[i] += 1;
+	// 		if(cur_key_index[i] + 1 == strlen(keywords[i])) {
+	// 			reset_match_keyword();
+	// 			return i + 256;
+	// 		}
+	// 	} else {
+	// 		cur_key_index[i] = -1;
+	// 	} // */
+	// }
+	// return 0;
+	int keywords_array_length = sizeof(keywords)/sizeof(keywords[0]);
+	int matched_chars = 0;
+	for (int i = 0; i < keywords_array_length; i++) {
+		int keyword_length = strlen(keywords[i]);
+		matched_chars = 0;
+		for (int j = 0; j < keyword_length; j++) {
+			if (current_char[j] == keywords[i][j]) {
+				matched_chars++;
 			}
-		} else {
-			cur_key_index[i] = -1;
-		} // */
+		}
+		if (matched_chars == strlen(keywords[i])) {
+			set_yytext(keywords[i], strlen(keywords[i]));
+			yyleng = strlen(yytext);
+			return i + 256;
+		}
 	}
+	reset_yytext();
+	yyleng = 1;
 	return 0;
 }
 
@@ -144,11 +175,10 @@ int is_comment(char *remaining_string) {
 			comment_length++;
 		}
 		yyleng = comment_length;
-		yytext = malloc(comment_length+1);
-		memcpy(yytext, remaining_string, comment_length+1);
-		yytext[comment_length+1] = '\0';
+		set_yytext(remaining_string, comment_length);
 		return 1;
 	} else {
+		reset_yytext();
 		yyleng = 1;
 		return 0;
 	}
@@ -211,45 +241,51 @@ unsigned long apply_rule(char *remaining_string) {
 	 
 	// printf("\n%c", *remaining_string);
 	
+// unsigned long value = 0;
+//
+// 	value = match_keyword(remaining_string);
+// 	if(value > 0) {
+// 		printf("MK: %ld\n", value);
+//
+// 		match_lexem_char(remaining_string);
+// 		match_assign_op(remaining_string);
+// 		match_comment(remaining_string);
+//
+// 		return value;
+// 	}
+//
+// 	value = match_lexem_char(remaining_string);
+// 	if(value > 0) {
+// 		printf("LC: %ld\n", value);
+//
+// 		match_assign_op(remaining_string);
+// 		match_comment(remaining_string);
+//
+// 		return value;
+// 	}
+//
+// 	value = match_assign_op(remaining_string);
+// 	if(value > 0) {
+// 		printf("AO: %ld\n", value);
+//
+// 		match_comment(remaining_string);
+//
+// 		return value;
+// 	}
+//
+// 	value = match_comment(remaining_string);
+// 	if(value > 0) {
+// 		printf("CO: %c\n", *remaining_string);
+// 		return 0;
+// 	}
+//
+// 	return 0;
 	unsigned long value = 0;
-	
 	value = match_keyword(remaining_string);
-	if(value > 0) {
-		printf("MK: %ld\n", value);
-		
-		match_lexem_char(remaining_string);
-		match_assign_op(remaining_string);
-		match_comment(remaining_string);
-		
-		return value;
+	if (value == 0) {
+		// TODO: call next matching function until one returns value > 0 or all rules where handled
 	}
-	
-	value = match_lexem_char(remaining_string);
-	if(value > 0) {
-		printf("LC: %ld\n", value);
-		
-		match_assign_op(remaining_string);
-		match_comment(remaining_string);
-		
-		return value;
-	}
-	
-	value = match_assign_op(remaining_string);
-	if(value > 0) {
-		printf("AO: %ld\n", value);
-		
-		match_comment(remaining_string);
-		
-		return value;
-	}
-	
-	value = match_comment(remaining_string);
-	if(value > 0) {
-		printf("CO: %c\n", *remaining_string);
-		return 0;
-	}
-	
-	return 0;
+	return value;
 }
 
 int main(int argc, char *argv[]) {
@@ -268,24 +304,29 @@ int main(int argc, char *argv[]) {
 	// iteration
 	int count = 0;
 	for (int i = 0; i < strlen(file_content); i+=yyleng) {
-		// skip comments
-		if (is_comment(&file_content[i])) {
-			// yytext and yyleng are set in is_comment(char*)
-			continue;
-		}
-		// skip whitespaces
-		if (strchr(whitespaces, file_content[i])) {
-			yyleng = 1;
-			yytext[0] = file_content[i];
-			yytext[1] = '\0';
-			continue;
-		}
+		// rules should be checked in right order!
+		
 		// TODO: if apply_rule() works, use this line of code
-		//unsigned long result = apply_rule(&file_content[i]);
+		unsigned long result = apply_rule(&file_content[i]);
 		
 		// TODO: until apply_rule() works as accepted, result is 1 for every character
-		unsigned long result = 1;
+		//unsigned long result = 1;
 		
+		if (!result) {
+			// skip comments
+			if (is_comment(&file_content[i])) {
+				// yytext and yyleng are set in is_comment(char*)
+				continue;
+			}
+			// skip whitespaces
+			if (strchr(whitespaces, file_content[i])) {
+				yyleng = 1;
+				set_yytext(&file_content[i], 1);
+				continue;
+			}
+			printf("Lexical error. Unrecognised input \"%s\"\n", &file_content[i]);
+			exit(1);
+		}
 		hash = (hash+result)*hashmult;
 	}
 	printf("%lx\n", hash);
