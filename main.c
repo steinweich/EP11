@@ -7,6 +7,7 @@ enum { END=256, ARRAY, OF, INT, RETURN, IF, THEN, ELSE, WHILE, DO, VAR,
 
 char* yytext; // last matched string
 int yyleng = 1; // length of last matched string or 1
+int yylen = 0;
 
 char *whitespaces = "\n\t ";
 
@@ -15,6 +16,196 @@ char *whitespaces = "\n\t ";
  * Effiziente Speicherdarstellung?
  * Effiziente Navigation?
  */
+
+
+
+//                                      1-----------------------2---------------3-------4----5--6
+const unsigned char *machine_states = " eaoirtwdvn:;(),<#[]-+*{}nlrrffnehhoao=|~dsrtteereaunryren";
+//                                                            2425            1641     849  5  31
+
+const int transfer[58][25] = {
+	{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0 },
+	
+	{ 25, 26, 40, 39, 0 }, //1
+	{ 27, 40, 39, 0 },
+	{ 28, 29, 40, 39, 0 },
+	{ 30, 31, 40, 39, 0 },
+	{ 32, 40, 39, 0},
+	{ 33, 40, 39, 0},
+	{ 34, 40, 39, 0},
+	{ 35, 40, 39, 0},
+	{ 36, 40, 39, 0},
+	{ 37, 40, 39, 0},
+	{ 38, 0 },
+	{ 0}, 
+	{ 0},
+	{ 0},
+	{ 0},
+	{ 0},
+	{ 0}, 
+	{ 0}, 
+	{ 0},
+	{ 0},
+	{ 0}, 
+	{ 0}, 	
+	{ 40, 39, 0 },
+	{ 24, 0 }, // 24
+	
+	{ 41, 40, 39, 0 }, //25
+	{ 42, 40, 39, 0 },
+	{ 43, 40, 39, 0 },
+	{ 40, 39, 0},
+	{ 40, 39, 0},
+	{ 40, 39, 0},
+	{ 44, 40, 39, 0},
+	{ 45, 40, 39, 0},
+	{ 46, 40, 39, 0},
+	{ 47, 40, 39, 0},
+	{ 40, 39, 0},
+	{ 48, 40, 39, 0},
+	{ 40, 39, 0 },
+	{ 40, 39, 0 },
+	{ 39, 0 },
+	{ 40, 39, 0 }, //40
+	
+	{ 39, 40, 0}, //41
+	{ 49, 39, 40, 0},
+	{ 50, 39, 40, 0},
+	{ 39, 40, 0},
+	{ 51, 39, 40, 0},
+	{ 52, 39, 40, 0},
+	{ 53, 39, 40, 0},
+	{ 39, 40, 0}, // 48
+	
+	{ 39, 40, 0}, //49
+	{ 54, 39, 40, 0},
+	{ 55, 39, 40, 0},
+	{ 39, 40, 0},
+	{ 56, 39, 40, 0}, // 53
+	
+	{ 39, 40, 0 }, // 54
+	{ 57, 39, 40, 0},
+	{ 39, 40, 0}, // 56
+	
+	{ 39, 40, 0} // 57
+};
+
+int state_machine_state = 0;
+
+// Check all possible next states for matches
+int next_state(int current_state, char *current_char) {
+	
+	int next_class = -1;
+	
+	for(int i=0;;i++) {
+		int check_class = transfer[current_state][i];
+		char char_class = machine_states[check_class];
+	
+		if(char_class > 122) {
+			if(char_class == '{' &&
+				(
+					(*current_char >= 97 && *current_char <= 122) ||
+					(*current_char >= 65 && *current_char <=90)
+				)
+			) {
+				next_class = check_class;
+				break;
+			} else if(char_class == '}' &&
+				(
+					(*current_char >= 48 && *current_char <= 57)
+				)
+			) {
+				next_class = check_class;
+				break;
+			} else if(char_class == '|' &&
+				(
+					(*current_char >= 97 && *current_char <= 122) ||
+					(*current_char >= 65 && *current_char <=90) || 
+					(*current_char >= 48 && *current_char <= 57)
+				)
+			) {
+				next_class = check_class;
+				break;
+			} else if(char_class == '~' &&
+				(
+					(*current_char >= 97 && *current_char <= 102) ||
+					(*current_char >= 65 && *current_char <=70) || 
+					(*current_char >= 48 && *current_char <= 57)
+				)
+			) {
+				next_class = check_class;
+				break;
+			}
+			
+		} else if(char_class == ' ') {
+			if(*current_char == ' ' || *current_char == '\n' || *current_char == '\r') {
+				next_class = check_class;
+			}
+			break;
+		} else {
+			if(*current_char == char_class) {
+				next_class = check_class;
+				break;
+			}
+		}
+	}
+	
+	return next_class;	
+	
+}
+
+unsigned long next_state_machine(char *current_char) {
+	
+	int next_class = next_state(state_machine_state, current_char);
+	
+	if(next_class == -1) {
+		
+		if(yylen > 0) {
+			printf("%s\n", yytext);
+			free(yytext);
+			yytext = NULL;
+			yylen = 0;		
+		}
+		
+		next_class = next_state(0, current_char);
+		
+		if(next_class == -1) {
+		
+			printf("\nUnknown Character found: %c %d %c\n", *current_char, state_machine_state, machine_states[state_machine_state]);
+			exit(1);
+		} else if (next_class > 0) {
+			char *tmp = realloc(yytext, yylen + 2);
+			yytext = tmp;
+			yytext[yylen] = *current_char;
+			yytext[yylen+1] = '\0';
+			yylen += 1;
+		}
+	} else {
+		
+		if(next_class == 0) {
+			if(yylen > 0) {
+				printf("%s\n", yytext);
+				free(yytext);
+				yytext = NULL;
+				yylen = 0;
+			}
+		} else {
+			char *tmp = realloc(yytext, yylen + 2);
+			yytext = tmp;
+			yytext[yylen] = *current_char;
+			yytext[yylen+1] = '\0';
+			yylen += 1;
+		}
+	}
+	// printf("%c ", machine_states[state_machine_state]);
+	state_machine_state = next_class;
+	// if next_class == -1 :: FEHLER
+	// if next_class == 0 :: NEUES WORT -> HASH !
+	// else continue	
+}
+
+// */
+
 
 /** Idee: Harte Substring Suche für definierte Worte
  * --*, end, array, of, int, return, if, then, else, while, do, var, not, or
@@ -211,6 +402,9 @@ unsigned long apply_rule(char *remaining_string) {
 	 
 	// printf("\n%c", *remaining_string);
 	
+	next_state_machine(remaining_string);
+	
+	/* 
 	unsigned long value = 0;
 	
 	value = match_keyword(remaining_string);
@@ -247,7 +441,7 @@ unsigned long apply_rule(char *remaining_string) {
 	if(value > 0) {
 		printf("CO: %c\n", *remaining_string);
 		return 0;
-	}
+	} // */
 	
 	return 0;
 }
@@ -267,7 +461,12 @@ int main(int argc, char *argv[]) {
 	// matched in the last iteration or 1 if no string matched in the last
 	// iteration
 	int count = 0;
-	for (int i = 0; i < strlen(file_content); i+=yyleng) {
+	//for (int i = 0; i < strlen(file_content); i+=yyleng) {
+		
+	
+	for(int i=0; i < strlen(file_content); i++) {
+	
+		/* 
 		// skip comments
 		if (is_comment(&file_content[i])) {
 			// yytext and yyleng are set in is_comment(char*)
@@ -287,6 +486,11 @@ int main(int argc, char *argv[]) {
 		unsigned long result = 1;
 		
 		hash = (hash+result)*hashmult;
+		// */
+		
+		apply_rule(&file_content[i]);
+		
+		
 	}
 	printf("%lx\n", hash);
 	
