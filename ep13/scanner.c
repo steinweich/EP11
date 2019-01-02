@@ -1909,6 +1909,9 @@ unsigned long hash(char *s)
   char *p;
   for (p=s; *p; p++)
     r = (r+*p)*hashmult;
+   
+   
+  //printf("ID %s!\n", s);
   return r;
 }
 
@@ -1924,8 +1927,11 @@ int main(int argc, char *argv[])
     perror(argv[1]);
     exit(1);
   }
-  for (x=0; r=yylex(), eof==0;)
+  for (x=0; r=yylex(), eof==0;) {
+	// printf("%lx\t%lu\t%s\n", x, r, yytext);
+	printf(">%s< \t %lu\n", yytext, r);
     x = (x+r)*hashmult;
+	}
   printf("%lx\n",x);
   return 0;
 }

@@ -2,6 +2,63 @@
 #include <string.h>
 #include <stdlib.h>
 
+
+#if defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+
+/* C99 says to define __STDC_LIMIT_MACROS before including stdint.h,
+ * if you want the limit (max/min) macros for int types. 
+ */
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS 1
+#endif
+
+#include <inttypes.h>
+typedef int8_t flex_int8_t;
+typedef uint8_t flex_uint8_t;
+typedef int16_t flex_int16_t;
+typedef uint16_t flex_uint16_t;
+typedef int32_t flex_int32_t;
+typedef uint32_t flex_uint32_t;
+#else
+typedef signed char flex_int8_t;
+typedef short int flex_int16_t;
+typedef int flex_int32_t;
+typedef unsigned char flex_uint8_t; 
+typedef unsigned short int flex_uint16_t;
+typedef unsigned int flex_uint32_t;
+
+/* Limits of integral types. */
+#ifndef INT8_MIN
+#define INT8_MIN               (-128)
+#endif
+#ifndef INT16_MIN
+#define INT16_MIN              (-32767-1)
+#endif
+#ifndef INT32_MIN
+#define INT32_MIN              (-2147483647-1)
+#endif
+#ifndef INT8_MAX
+#define INT8_MAX               (127)
+#endif
+#ifndef INT16_MAX
+#define INT16_MAX              (32767)
+#endif
+#ifndef INT32_MAX
+#define INT32_MAX              (2147483647)
+#endif
+#ifndef UINT8_MAX
+#define UINT8_MAX              (255U)
+#endif
+#ifndef UINT16_MAX
+#define UINT16_MAX             (65535U)
+#endif
+#ifndef UINT32_MAX
+#define UINT32_MAX             (4294967295U)
+#endif
+
+#endif /* ! C99 */
+
+
 enum { END=256, ARRAY, OF, INT, RETURN, IF, THEN, ELSE, WHILE, DO, VAR,
  NOT, OR, ASSIGNOP };
 
@@ -11,31 +68,117 @@ int yylen = 0;
 
 char *whitespaces = "\n\t ";
 
+/*****************************************/
+/***** COPY+PASTE FROM LEX PROGRAM *******/
+/*****************************************/
+#define hashmult 13493690561280548289ULL
+
+unsigned long total_hash = 0;
+
+unsigned long hash(char *s)
+{
+	unsigned long r=0;
+	char *p;
+	for (p=s; *p; p++)
+		r = (r+*p)*hashmult;
+	//printf("ID %s!\n", s);
+	return r;
+}
+
 /** Idee: Finite State Automata programmieren für substring-suche
  * DIGIT + ID + INTEGER + HEXDIGIT
  * Effiziente Speicherdarstellung?
  * Effiziente Navigation?
  */
 
+const int hash_function[61] = {
+	0,
+	
+	1,
+	1,
+	1,
+	1,
+	1,
+	1,
+	1,
+	1,
+	1,
+	1,
+	':',
+	';',
+	'(',
+	')',
+	',',
+	'<',
+	'#',
+	'[',
+	']',
+	'-',
+	'+',
+	'*',
+	1,
+	2,
+	
+	1,
+	1,
+	1,
+	256 + 12, //or
+	256 + 2, //of
+	256 + 5, //if
+	1,
+	1,
+	1,
+	1,
+	256 + 9, //do
+	1,
+	1,
+	256 + 13, //ASSIGNOP :=
+	0, //COMMENT --.*
+	1,
+	3,
+	
+	256 + 0, //end
+	1,
+	1,
+	256 + 3, //int
+	1,
+	1,
+	1,
+	256+10, //var
+	256+11, //not
+	0, //COMMENT --.*
+	
+	256+7, //else
+	1,
+	1,
+	256 + 6, //then
+	1,
+	
+	256 + 1, //array
+	1,
+	256 + 8, //while
+	
+	256 + 4 //return
+};
 
 
-//                                      1-----------------------2---------------3-------4----5--6
-const unsigned char *machine_states = " eaoirtwdvn:;(),<#[]-+*{}nlrrffnehhoao=|~dsrtteereaunryren";
-//                                                            2425            1641     849  5  31
+//                                      1-----------------------2----------------3---------4----5--6
+const unsigned char *machine_states = " eaoirtwdvn:;(),<#[]-+*{}nlrrffnehhoao=-|~dsrtteirt!eaunlyren";
+//                                                            2425             1742      1052  5  31
 
-const int transfer[58][25] = {
+const int transfer[61][25] = {
 	{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0 },
 	
-	{ 25, 26, 40, 39, 0 }, //1
-	{ 27, 40, 39, 0 },
-	{ 28, 29, 40, 39, 0 },
-	{ 30, 31, 40, 39, 0 },
-	{ 32, 40, 39, 0},
-	{ 33, 40, 39, 0},
-	{ 34, 40, 39, 0},
-	{ 35, 40, 39, 0},
-	{ 36, 40, 39, 0},
-	{ 37, 40, 39, 0},
+	{ 25, 26, 41, 40, 0 }, //1
+	{ 27, 41, 40, 0 },
+	{ 28, 29, 41, 40, 0 },
+	{ 30, 31, 41, 40, 0 },
+	{ 32, 41, 40, 0},
+	{ 33, 41, 40, 0},
+	{ 34, 41, 40, 0},
+	{ 35, 41, 40, 0},
+	{ 36, 41, 40, 0},
+	{ 37, 41, 40, 0},
 	{ 38, 0 },
 	{ 0}, 
 	{ 0},
@@ -45,49 +188,52 @@ const int transfer[58][25] = {
 	{ 0}, 
 	{ 0}, 
 	{ 0},
-	{ 0},
+	{ 39, 0},
 	{ 0}, 
 	{ 0}, 	
-	{ 40, 39, 0 },
-	{ 24, 0 }, // 24
+	{ 41, 40, 0 },
+	{ 24, 41, 0 }, // 24
 	
-	{ 41, 40, 39, 0 }, //25
-	{ 42, 40, 39, 0 },
-	{ 43, 40, 39, 0 },
+	{ 42, 41, 40, 0 }, //25
+	{ 43, 41, 40, 0 },
+	{ 44, 41, 40, 0 },
+	{ 41, 40, 0},
+	{ 41, 40, 0},
+	{ 41, 40, 0},
+	{ 45, 41, 40, 0},
+	{ 46, 41, 40, 0},
+	{ 47, 41, 40, 0},
+	{ 48, 41, 40, 0},
 	{ 40, 39, 0},
-	{ 40, 39, 0},
-	{ 40, 39, 0},
-	{ 44, 40, 39, 0},
-	{ 45, 40, 39, 0},
-	{ 46, 40, 39, 0},
-	{ 47, 40, 39, 0},
-	{ 40, 39, 0},
-	{ 48, 40, 39, 0},
-	{ 40, 39, 0 },
-	{ 40, 39, 0 },
-	{ 39, 0 },
-	{ 40, 39, 0 }, //40
+	{ 49, 41, 40, 0},
+	{ 50, 41, 40, 0 },
+	{ 0 },
+	{ 51, 0 },
+	{ 40, 0 },
+	{ 41, 40, 0 }, //41
 	
-	{ 39, 40, 0}, //41
-	{ 49, 39, 40, 0},
-	{ 50, 39, 40, 0},
-	{ 39, 40, 0},
-	{ 51, 39, 40, 0},
-	{ 52, 39, 40, 0},
+	{ 41, 40, 0}, //42
+	{ 52, 41, 40, 0},
 	{ 53, 39, 40, 0},
-	{ 39, 40, 0}, // 48
-	
-	{ 39, 40, 0}, //49
-	{ 54, 39, 40, 0},
-	{ 55, 39, 40, 0},
 	{ 39, 40, 0},
-	{ 56, 39, 40, 0}, // 53
+	{ 54, 41, 40, 0},
+	{ 55, 41, 40, 0},
+	{ 56, 41, 40, 0},
+	{ 41, 40, 0}, 
+	{ 41, 40, 0},
+	{ 51, 0}, // 51
 	
-	{ 39, 40, 0 }, // 54
-	{ 57, 39, 40, 0},
-	{ 39, 40, 0}, // 56
+	{ 41, 40, 0}, //52
+	{ 57, 41, 40, 0},
+	{ 58, 41, 40, 0},
+	{ 41, 40, 0},
+	{ 59, 41, 40, 0}, // 56
 	
-	{ 39, 40, 0} // 57
+	{ 41, 40, 0 }, // 57
+	{ 60, 41, 40, 0},
+	{ 41, 40, 0}, // 59
+	
+	{ 41, 40, 0} // 60
 };
 
 int state_machine_state = 0;
@@ -142,6 +288,11 @@ int next_state(int current_state, char *current_char) {
 				next_class = check_class;
 			}
 			break;
+		} else if(char_class == '!') {
+			if(*current_char != '\n') {
+				next_class = check_class;
+				break;
+			}
 		} else {
 			if(*current_char == char_class) {
 				next_class = check_class;
@@ -154,6 +305,37 @@ int next_state(int current_state, char *current_char) {
 	
 }
 
+void new_word() {
+	
+	int hashfunc = hash_function[state_machine_state];
+	if(hashfunc > 0) {
+		unsigned long r = 0;
+		
+		if(hashfunc == 1) {
+			// printf("ID\n");
+			r = hash(yytext);
+		} else if(hashfunc == 2) {
+			// printf("INT\n");
+			r = strtoul(yytext, NULL, 10) ^ 0x8000;
+		} else if(hashfunc == 3) {
+			// printf("HEX\n");
+			r = strtoul(yytext+1, NULL, 16) ^ 0x4000;
+		} else{
+			r = hashfunc;
+		}
+		
+		// TOTAL
+		total_hash = (total_hash + r) * hashmult;
+		
+		printf(">%s< \t %lu\n", yytext, r);
+	
+	}
+	
+	free(yytext);
+	yytext = NULL;
+	yylen = 0;
+}
+
 unsigned long next_state_machine(char *current_char) {
 	
 	int next_class = next_state(state_machine_state, current_char);
@@ -161,10 +343,11 @@ unsigned long next_state_machine(char *current_char) {
 	if(next_class == -1) {
 		
 		if(yylen > 0) {
-			printf("%s\n", yytext);
-			free(yytext);
-			yytext = NULL;
-			yylen = 0;		
+			//printf("%s\n", yytext);
+			//free(yytext);
+			//yytext = NULL;
+			//yylen = 0;
+			new_word();
 		}
 		
 		next_class = next_state(0, current_char);
@@ -184,10 +367,11 @@ unsigned long next_state_machine(char *current_char) {
 		
 		if(next_class == 0) {
 			if(yylen > 0) {
-				printf("%s\n", yytext);
-				free(yytext);
-				yytext = NULL;
-				yylen = 0;
+				//printf("%s\n", yytext);
+				//free(yytext);
+				//yytext = NULL;
+				//yylen = 0;
+				new_word();
 			}
 		} else {
 			char *tmp = realloc(yytext, yylen + 2);
@@ -375,24 +559,7 @@ int is_comment(char *remaining_string) {
 	}
 }
 
-/*
-	Calculates hash of string
-*/
-unsigned long hash(char *s);
 
-/*****************************************/
-/***** COPY+PASTE FROM LEX PROGRAM *******/
-/*****************************************/
-#define hashmult 13493690561280548289ULL
-
-unsigned long hash(char *s)
-{
-  unsigned long r=0;
-  char *p;
-  for (p=s; *p; p++)
-    r = (r+*p)*hashmult;
-  return r;
-}
 /*****************************************/
 /*****************************************/
 /*****************************************/
@@ -511,7 +678,7 @@ int main(int argc, char *argv[]) {
 	
 	char *file_content = read_file(argv[1]);
 	
-	unsigned long hash = 0;
+	
 	
 	// iterate over the whole file content.
 	// yyleng is modified in apply_rules(). yyleng is the length of the string
@@ -553,7 +720,7 @@ int main(int argc, char *argv[]) {
 		
 		
 	}
-	printf("%lx\n", hash);
+	printf("%lx\n", total_hash);
 	
 	return 0;
 }
