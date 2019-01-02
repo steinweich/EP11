@@ -4,6 +4,7 @@
 
 char* yytext = NULL; // last matched string
 int yylen = 0;
+int maxbuf = 0;
 
 /*****************************************/
 /***** COPY+PASTE FROM LEX PROGRAM *******/
@@ -16,8 +17,12 @@ unsigned long hash(char *s)
 {
 	unsigned long r=0;
 	char *p;
-	for (p=s; *p; p++)
+	for (p=s; *p; p++) {
+		
 		r = (r+*p)*hashmult;
+		// printf("%c %lu\n", *p, r);
+	}
+	
 	//printf("ID %s!\n", s);
 	return r;
 }
@@ -35,17 +40,18 @@ unsigned long hash(char *s)
 // ~ = afAf0-9
 //   = Whitespace (\n\t ) bzw. Start-Zustand
 // ! = . (ausgenommen \n)
-//                                      1-----------------------2----------------3---------4----5--6
-const unsigned char *machine_states = " eaoirtwdvn:;(),<#[]-+*{}nlrrffnehhoao=-|~dsrtteirt!eaunlyren";
-//                                                            2425             1742      1052  5  31
+//                                      1------------------------2----------------3---------4----5--6
+const unsigned char *machine_states = " eaoirtwdvn:;(),<#[]-+*${}nlrrffnehhoao=-|~dsrtteirt!eaunlyren";
+//                                                             2526             1742      1052  5  31
 
 // Welche Hash-Funktion ausgeführt werden soll pro state der Maschine (index des arrays = index von machine_states)
+// -1 = Ungueltig
 // 0 = kein Hash
 // 1 = hash()
 // 2 = strtoul(yytext, NULL, 10) ^ 0x8000;
 // 3 = strtoul(yytext+1, NULL, 16) ^ 0x4000;
 // >3 = genau jener wert
-const int hash_function[61] = {
+const int hash_function[62] = {
 	0,
 	
 	1,
@@ -70,6 +76,7 @@ const int hash_function[61] = {
 	'-',
 	'+',
 	'*',
+	-1,
 	1,
 	2,
 	
@@ -117,20 +124,20 @@ const int hash_function[61] = {
 
 // Von welchen Zustaenden man in welche Zustaende darf (alle zahlen und indizes sind indizes von machine_states)
 // Jeder Zustand wird angenommen und 0 ist immer Start / Ende des Wortes etc. und wird daher als letztes ueberprueft
-const int transfer[61][25] = {
-	{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0 },
+const int transfer[62][26] = {
+	{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0 },
 	
-	{ 25, 26, 41, 40, 0 }, //1
-	{ 27, 41, 40, 0 },
-	{ 28, 29, 41, 40, 0 },
-	{ 30, 31, 41, 40, 0 },
-	{ 32, 41, 40, 0},
-	{ 33, 41, 40, 0},
-	{ 34, 41, 40, 0},
-	{ 35, 41, 40, 0},
-	{ 36, 41, 40, 0},
-	{ 37, 41, 40, 0},
-	{ 38, 0 },
+	{ 26, 27, 41, 0 }, //1
+	{ 28, 41, 0 },
+	{ 29, 30, 41, 0 },
+	{ 31, 32, 41, 0 },
+	{ 33, 41, 0},
+	{ 34, 41, 0},
+	{ 35, 41, 0},
+	{ 36, 41, 0},
+	{ 37, 41, 0},
+	{ 38, 41, 0},
+	{ 39, 0 },
 	{ 0}, 
 	{ 0},
 	{ 0},
@@ -139,52 +146,53 @@ const int transfer[61][25] = {
 	{ 0}, 
 	{ 0}, 
 	{ 0},
-	{ 39, 0},
+	{ 40, 0},
 	{ 0}, 
-	{ 0}, 	
-	{ 41, 40, 0 },
-	{ 24, 41, 0 }, // 24
+	{ 0},
+	{ 42, 0 },
+	{ 41, 0 },
+	{ 25, 0 }, // 25
 	
-	{ 42, 41, 40, 0 }, //25
-	{ 43, 41, 40, 0 },
-	{ 44, 41, 40, 0 },
-	{ 41, 40, 0},
-	{ 41, 40, 0},
-	{ 41, 40, 0},
-	{ 45, 41, 40, 0},
-	{ 46, 41, 40, 0},
-	{ 47, 41, 40, 0},
-	{ 48, 41, 40, 0},
-	{ 40, 39, 0},
-	{ 49, 41, 40, 0},
-	{ 50, 41, 40, 0 },
+	{ 43, 41, 0 }, //26
+	{ 44, 41, 0 },
+	{ 45, 41, 0 },
+	{ 41, 0},
+	{ 41, 0},
+	{ 41, 0},
+	{ 46, 41, 0},
+	{ 47, 41, 0},
+	{ 48, 41, 0},
+	{ 49, 41, 0},
+	{ 41, 0},
+	{ 50, 41, 0},
+	{ 51, 41, 0 },
 	{ 0 },
-	{ 51, 0 },
-	{ 40, 0 },
-	{ 41, 40, 0 }, //41
+	{ 52, 0 },
+	{ 41, 0 },
+	{ 42, 0 }, //42
 	
-	{ 41, 40, 0}, //42
-	{ 52, 41, 40, 0},
-	{ 53, 39, 40, 0},
-	{ 39, 40, 0},
-	{ 54, 41, 40, 0},
-	{ 55, 41, 40, 0},
-	{ 56, 41, 40, 0},
-	{ 41, 40, 0}, 
-	{ 41, 40, 0},
-	{ 51, 0}, // 51
+	{ 41, 0}, //43
+	{ 53, 41, 0},
+	{ 54, 41, 0},
+	{ 41, 0},
+	{ 55, 41, 0},
+	{ 56, 41, 0},
+	{ 57, 41, 0},
+	{ 41, 0}, 
+	{ 41, 0},
+	{ 52, 0}, // 52
 	
-	{ 41, 40, 0}, //52
-	{ 57, 41, 40, 0},
-	{ 58, 41, 40, 0},
-	{ 41, 40, 0},
-	{ 59, 41, 40, 0}, // 56
+	{ 41, 0}, //53
+	{ 58, 41, 0},
+	{ 59, 41, 0},
+	{ 41, 0},
+	{ 60, 41, 0}, // 57
 	
-	{ 41, 40, 0 }, // 57
-	{ 60, 41, 40, 0},
-	{ 41, 40, 0}, // 59
+	{ 41, 0 }, // 58
+	{ 61, 41, 0},
+	{ 41, 0}, // 60
 	
-	{ 41, 40, 0} // 60
+	{ 41, 0} // 61
 };
 
 int state_machine_state = 0;
@@ -236,7 +244,7 @@ int next_state(int current_state, char *current_char) {
 			}
 			
 		} else if(char_class == ' ') {
-			if(*current_char == ' ' || *current_char == '\n' || *current_char == '\r') {
+			if(*current_char == ' ' || *current_char == '\n' || *current_char == '\t') {
 				next_class = check_class;
 			}
 			break;
@@ -266,27 +274,49 @@ void new_word() {
 		
 		if(hashfunc == 1) {
 			// printf("ID\n");
-			r = hash(yytext);
+			r = (int)hash(yytext);
 		} else if(hashfunc == 2) {
 			// printf("INT\n");
-			r = strtoul(yytext, NULL, 10) ^ 0x8000;
+			r = (int)strtoul(yytext, NULL, 10) ^ 0x8000;
 		} else if(hashfunc == 3) {
 			// printf("HEX\n");
-			r = strtoul(yytext+1, NULL, 16) ^ 0x4000;
-		} else{
+			r = (int)strtoul(yytext+1, NULL, 16) ^ 0x4000;
+		} else if(hashfunc > 0) {
 			r = hashfunc;
+		} else {
+			printf("Lexical error. Unrecognised input \"%s\"\n", yytext); exit(1);
+			exit(1);
 		}
+		// printf(">%s< \t %lu\n", yytext, r);
 		
 		// TOTAL
 		total_hash = (total_hash + r) * hashmult;
 		
-		printf(">%s< \t %lu\n", yytext, r);
+		
 	
 	}
 	
-	free(yytext);
-	yytext = NULL;
+	// free(yytext);
+	// yytext = NULL;
+	yytext[0] = '\0';
 	yylen = 0;
+}
+
+void append_char(char *c) {
+	// printf("%d %d %c\n", yylen+2, maxbuf, *c);
+	
+	if(yylen+2 > maxbuf) {
+		// printf("Realloc\n");
+		char *tmp = realloc(yytext, yylen + 2);
+		yytext = tmp;
+		maxbuf = yylen + 2;
+	}
+	
+	// printf("%d %d %c\n", yylen+2, maxbuf, *c);
+	
+	yytext[yylen] = *c;
+	yylen += 1;	
+	yytext[yylen] = '\0';
 }
 
 // Wechsle in den naechsten Status - oder brich bei ungueltigem character ab
@@ -302,16 +332,13 @@ unsigned long next_state_machine(char *current_char) {
 		
 		next_class = next_state(0, current_char); // Probiere es vom start-zustand nochmals
 		
-		if(next_class == -1) { // Ungueltiger character
+		// Verlaengere Wort (bzw. fange neu an)		
+		append_char(current_char);
 		
-			printf("\nUnknown Character found: %c %d %c\n", *current_char, state_machine_state, machine_states[state_machine_state]);
+		if(next_class == -1) { // Ungueltiger character
+
+			printf("Lexical error. Unrecognised input \"%s\"\n", yytext); exit(1);
 			exit(1);
-		} else if (next_class > 0) { // Verlaengere Wort (bzw. fange neu an)
-			char *tmp = realloc(yytext, yylen + 2);
-			yytext = tmp;
-			yytext[yylen] = *current_char;
-			yytext[yylen+1] = '\0';
-			yylen += 1;
 		}
 	} else {
 		
@@ -320,11 +347,7 @@ unsigned long next_state_machine(char *current_char) {
 				new_word();
 			}
 		} else { // Wort wird verlaengert
-			char *tmp = realloc(yytext, yylen + 2);
-			yytext = tmp;
-			yytext[yylen] = *current_char;
-			yytext[yylen+1] = '\0';
-			yylen += 1;
+			append_char(current_char);
 		}
 	}
 	state_machine_state = next_class;
@@ -363,7 +386,9 @@ int main(int argc, char *argv[]) {
 	
 	char *file_content = read_file(argv[1]);
 
-	for (int i = 0; i < strlen(file_content); i+=1) {
+	int filelen = strlen(file_content);
+
+	for (int i = 0; i < filelen; i+=1) {
 		next_state_machine(&file_content[i]);
 	}
 	printf("%lx\n", total_hash);
