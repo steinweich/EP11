@@ -272,7 +272,7 @@ int next_state(int current_state, unsigned char *current_char) {
 			return 0;
 		}
 	} else { 
-		methodfour++;
+		//methodfour++;
 		int i=0;
 		int check_class = transfer[current_state][i];
 		while(check_class >= 0) {
