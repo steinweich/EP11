@@ -391,6 +391,11 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < filelen; i+=1) {
 		next_state_machine(&file_content[i]);
 	}
+	
+	if(yylen > 0) {
+		new_word();
+	}
+	
 	printf("%lx\n", total_hash);
 	
 	return 0;
