@@ -213,23 +213,23 @@ void new_word() {
 			//6208419
 			// printf("ID\n");
 			r = (int)hash(yytext);
-		} else if(hashfunc == 2) {
-			//methodtwo++;
-			//1350000
-			// printf("INT\n");
-			r = (int)strtoul(yytext, NULL, 10) ^ 0x8000;
-		} else if(hashfunc == 3) {
-			//methodthree++;
-			//30000
-			// printf("HEX\n");
-			r = (int)strtoul(yytext+1, NULL, 16) ^ 0x4000;
-		} else {
-			r = hashfunc;
-		}			
+			} else if(hashfunc == 2) {
+				//methodtwo++;
+				//1350000
+				// printf("INT\n");
+				r = (int)strtoul(yytext, NULL, 10) ^ 0x8000;
+			} else if(hashfunc == 3) {
+				//methodthree++;
+				//30000
+				// printf("HEX\n");
+				r = (int)strtoul(yytext+1, NULL, 16) ^ 0x4000;
+			} else {
+				r = hashfunc;
+			}			
 			 
 			// printf(">%s< \t %lu\n", yytext, r);
 			// TOTAL
-		total_hash = (total_hash + r) * hashmult;
+			total_hash = (total_hash + r) * hashmult;
 	
 		} else if(hashfunc == -1) {
 			printf("H Lexical error. Unrecognised input \"%s\"\n", yytext); exit(1);
@@ -243,6 +243,13 @@ void new_word() {
 
 // Suche anhand des derzeitigen Characters und des gegebenen zustands den naechsten zustand
 // -1 wenn kein passender zustand gefunden (bzw. wort zu ende)
+int methodone = 0;
+int methodtwo = 0;
+int methodthree = 0;
+int methodfour = 0;
+int methodfive = 0;
+int methodsix = 0;
+
 int next_state(int current_state, unsigned char *current_char) {
 	
 	if(current_state != 2 && (*current_char == ' ' || *current_char == '\n' || *current_char == '\t')) { // Not comment mode + whitespace -> deal
@@ -274,6 +281,7 @@ int next_state(int current_state, unsigned char *current_char) {
 						(*current_char >= 48 && *current_char <= 57)
 					)
 				) {
+					methodone++;
 					return check_class;
 				} else if(char_class == '{' &&
 					(
@@ -281,12 +289,14 @@ int next_state(int current_state, unsigned char *current_char) {
 						(*current_char >= 65 && *current_char <=90)
 					)
 				) {
+					methodtwo++;
 					return check_class;
 				} else if(char_class == '}' &&
 					(
 						(*current_char >= 48 && *current_char <= 57)
 					)
 				) {
+					methodthree++;
 					return check_class;
 				} else if(char_class == '~' &&
 					(
@@ -295,14 +305,17 @@ int next_state(int current_state, unsigned char *current_char) {
 						(*current_char >= 48 && *current_char <= 57)
 					)
 				) {
+					methodfour++;
 					return check_class;
 				} else if(char_class == '\x7F' &&
 					(*current_char != '\n')
 				) {
+					methodfive++;
 					return check_class;
 				} else if(char_class == (unsigned char)'\x80' &&
 					(*current_char == ' ' || *current_char == '\t' || *current_char == '\n')
 				) {
+					methodsix++;
 					return check_class;
 				}
 			} else {
@@ -389,7 +402,7 @@ int main(int argc, char *argv[]) {
 	//	printf("%c %d\n", machine_states[i], machine_states[i]);
 	
 	unsigned char *file_content = read_file(argv[1]);
-
+	// 5m cycles first
 	//int filelen = strlen(file_content);
 
 	unsigned char *c;
@@ -400,7 +413,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	new_word();
-	
+	printf("one: %i two: %i three: %i four: %i five: %i six : %i \n", methodone, methodtwo, methodthree, methodfour, methodfive, methodsix);
 	printf("%lx\n", total_hash);
 	
 	return 0;
