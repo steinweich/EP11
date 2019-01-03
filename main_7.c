@@ -266,9 +266,9 @@ int next_state(int current_state, unsigned char *current_char) {
 			return 2;
 		} else {
 			//methodsix++;
-			 new_word(); // Reset and start from scratch
-			//yytext[0] = '\0';
-			//yylen = 2;
+			//new_word(); // Reset and start from scratch
+			yytext[0] = '\0';
+			yylen = 2;
 			return 0;
 		}
 	} else { 
