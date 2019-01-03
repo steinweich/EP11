@@ -310,7 +310,7 @@ void new_word() {
 
 void append_char(char *c) {
 	// printf("%d %d %c\n", yylen+2, maxbuf, *c);
-	mtehodthree++;
+	methodthree++;
 	if(yylen+2 > maxbuf) {
 		// printf("Realloc\n");
 		char *tmp = realloc(yytext, yylen + 2);
