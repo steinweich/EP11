@@ -397,7 +397,5 @@ int main(int argc, char *argv[]) {
 	}
 	
 	printf("%lx\n", total_hash);
-	printf("onetwenty: %i nintyseven: %i sixtyfice: %i fourtyeight: %i",onetwenty, nintyseven, sixtyfice, fourtyeight)
-		printf("charclassone: %i charclasstwo: %i charclassthree: %i charclassfour: %i",charclassone, charclasstwo, charclassthree, charclassfour)
 	return 0;
 }
