@@ -207,17 +207,7 @@ int next_state(int current_state, char *current_char) {
 		int check_class = transfer[current_state][i];
 		char char_class = machine_states[check_class];
 	
-		if(char_class == ' ') {
-			if(*current_char == ' ' || *current_char == '\n' || *current_char == '\t') {
-				next_class = check_class;
-			}
-			break;
-		} else if(char_class == '!') {
-			if(*current_char != '\n') {
-				next_class = check_class;
-				break;
-			}		
-		} else if(char_class > 122) {
+		if(char_class > 122) {
 			if(char_class == '{' &&
 				(
 					(*current_char >= 97 && *current_char <= 122) ||
@@ -253,6 +243,16 @@ int next_state(int current_state, char *current_char) {
 				break;
 			}
 			
+		} else if(char_class == ' ') {
+			if(*current_char == ' ' || *current_char == '\n' || *current_char == '\t') {
+				next_class = check_class;
+			}
+			break;
+		} else if(char_class == '!') {
+			if(*current_char != '\n') {
+				next_class = check_class;
+				break;
+			}
 		} else {
 			if(*current_char == char_class) {
 				next_class = check_class;
@@ -325,7 +325,7 @@ unsigned long next_state_machine(char *current_char) {
 	int next_class = next_state(state_machine_state, current_char);
 	
 	if(next_class == -1) { // Kein naechster status gefunden - wahrscheinlich neues wort
-		
+		printf("Panic");
 		if(yylen > 0) {
 			new_word();
 		}
