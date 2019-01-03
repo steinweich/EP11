@@ -203,9 +203,7 @@ int state_machine_state = 0;
 int next_state(int current_state, char *current_char) {
 	
 	int next_class = -1;
-	bool nintyseven = (*current_char >= 97 && *current_char <= 122);
-	bool sixtyfive = (*current_char >= 65 && *current_char <=90);
-	bool fourtyeight = (*current_char >= 48 && *current_char <= 57);
+	
 			
 	for(int i=0;;i++) {
 		int check_class = transfer[current_state][i];
@@ -213,31 +211,35 @@ int next_state(int current_state, char *current_char) {
 	
 		
 		if(char_class > 122) {
-			
-			if(char_class == '{' &&
+			if(char_class == '|' &&
 				(
-					nintyseven || sixtyfive
+					(*current_char >= 97 && *current_char <= 122) ||
+					(*current_char >= 65 && *current_char <=90) || 
+					(*current_char >= 48 && *current_char <= 57)
+				)
+			) {
+				next_class = check_class;
+				break;
+			} else if(char_class == '{' &&
+				(
+					(*current_char >= 97 && *current_char <= 122) ||
+					(*current_char >= 65 && *current_char <=90)
 				)
 			) {
 				next_class = check_class;
 				break;
 			} else if(char_class == '}' &&
 				(
-					fourtyeight
-				)
-			) {
-				next_class = check_class;
-				break;
-			} else if(char_class == '|' &&
-				(
-					nintyseven || sixtyfive || fourtyeight
+					(*current_char >= 48 && *current_char <= 57)
 				)
 			) {
 				next_class = check_class;
 				break;
 			} else if(char_class == '~' &&
 				(
-					nintyseven || sixtyfive || fourtyeight
+					(*current_char >= 97 && *current_char <= 102) ||
+					(*current_char >= 65 && *current_char <=70) || 
+					(*current_char >= 48 && *current_char <= 57)
 				)
 			) {
 				next_class = check_class;
@@ -397,5 +399,6 @@ int main(int argc, char *argv[]) {
 	}
 	
 	printf("%lx\n", total_hash);
+	
 	return 0;
 }
