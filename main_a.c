@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 char* yytext = NULL; // last matched string
-int yylen = 0;
+int yylen = 2;
 int maxbuf = 0;
 
 /*****************************************/
@@ -347,7 +347,7 @@ void new_word() {
 	// free(yytext);
 	// yytext = NULL;
 	yytext[0] = '\0';
-	yylen = 0;
+	yylen = 2;
 }
 
 void append_char(char *c) {
@@ -356,14 +356,11 @@ void append_char(char *c) {
 	//73831833
 	
 	if(yylen > maxbuf) {
-		methodone++;
-		if(yylen+2 > maxbuf) {
-		methodone++;
 		// printf("Realloc\n");
-		char *tmp = realloc(yytext, yylen + 2);
+		char *tmp = realloc(yytext, yylen );
 		yytext = tmp;
-		maxbuf = yylen + 2;
-		}
+		maxbuf = yylen ;
+		
 	}
 	
 	// printf("%d %d %c\n", yylen+2, maxbuf, *c);
@@ -380,7 +377,7 @@ unsigned long next_state_machine(char *current_char) {
 	
 	if(next_class == -1) { // Kein naechster status gefunden - wahrscheinlich neues wort
 
-		if(yylen > 0) {
+		if(yylen > 2) {
 			new_word();
 		}
 		
@@ -397,7 +394,7 @@ unsigned long next_state_machine(char *current_char) {
 	} else {
 
 		if(next_class == 0) { // Neues Wort wurde angefangen
-			if(yylen > 0) {
+			if(yylen > 2) {
 				new_word();
 			}
 		} else { // Wort wird verlaengert
@@ -446,7 +443,7 @@ int main(int argc, char *argv[]) {
 		next_state_machine(&file_content[i]);
 	}
 	
-	if(yylen > 0) {
+	if(yylen > 2) {
 		new_word();
 	}
 	printf("one: %i two: %i three: %i four: %i five: %i", methodone, methodtwo, methodthree, methodfour, methodfive);
