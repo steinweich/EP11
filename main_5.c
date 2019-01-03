@@ -313,7 +313,7 @@ int next_state(int current_state, unsigned char *current_char) {
 }
 
 void append_char(unsigned char *c) {
-	
+	//220m cycles let yylen start with 2 and yylen >0 be yylen >2
 	if(yylen > maxbuf) {
 		unsigned char *tmp = realloc(yytext, yylen);
 		yytext = tmp;

@@ -390,7 +390,7 @@ int main(int argc, char *argv[]) {
 	
 	unsigned char *file_content = read_file(argv[1]);
 
-	int filelen = strlen(file_content);
+	//int filelen = strlen(file_content);
 
 	unsigned char *c;
 	
