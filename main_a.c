@@ -318,9 +318,7 @@ void new_word() {
 		// printf(">%s< \t %lu\n", yytext, r);*/
 		
 		
-		if(hashfunc > 3){
-			r = hashfunc;
-		} else if(hashfunc == 1) {
+		if(hashfunc == 1) {
 			//methodone++;
 			//6208419
 			// printf("ID\n");
@@ -335,7 +333,9 @@ void new_word() {
 			//30000
 			// printf("HEX\n");
 			r = (int)strtoul(yytext+1, NULL, 16) ^ 0x4000;
-		} 
+		} else {
+			r = hashfunc;
+		}			
 		
 		// TOTAL
 		total_hash = (total_hash + r) * hashmult;
