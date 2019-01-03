@@ -266,7 +266,15 @@ int next_state(int current_state, unsigned char *current_char) {
 		while(check_class >= 0) {
 			unsigned char char_class = machine_states[check_class];
 			if(char_class > 122) {
-				if(char_class == '{' &&
+				if(char_class == '|' &&
+					(
+						(*current_char >= 97 && *current_char <= 122) ||
+						(*current_char >= 65 && *current_char <=90) || 
+						(*current_char >= 48 && *current_char <= 57)
+					)
+				) {
+					return check_class;
+				} else if(char_class == '{' &&
 					(
 						(*current_char >= 97 && *current_char <= 122) ||
 						(*current_char >= 65 && *current_char <=90)
@@ -275,14 +283,6 @@ int next_state(int current_state, unsigned char *current_char) {
 					return check_class;
 				} else if(char_class == '}' &&
 					(
-						(*current_char >= 48 && *current_char <= 57)
-					)
-				) {
-					return check_class;
-				} else if(char_class == '|' &&
-					(
-						(*current_char >= 97 && *current_char <= 122) ||
-						(*current_char >= 65 && *current_char <=90) || 
 						(*current_char >= 48 && *current_char <= 57)
 					)
 				) {
