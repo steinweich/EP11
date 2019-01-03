@@ -354,7 +354,9 @@ void append_char(char *c) {
 	// printf("%d %d %c\n", yylen+2, maxbuf, *c);
 	//methodthree++;
 	//73831833
+	
 	if(yylen+2 > maxbuf) {
+		methodone++;
 		// printf("Realloc\n");
 		char *tmp = realloc(yytext, yylen + 2);
 		yytext = tmp;
