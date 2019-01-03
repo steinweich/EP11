@@ -199,76 +199,45 @@ int state_machine_state = 0;
 
 // Suche anhand des derzeitigen Characters und des gegebenen zustands den naechsten zustand
 // -1 wenn kein passender zustand gefunden (bzw. wort zu ende)
-int onetwenty = 0;
-int nintyseven = 0;
-int sixtyfice = 0;
-int fourtyeight = 0;
-int charclassone = 0;
-int charclasstwo=0;
-int charclassthree = 0;
-int charclassfour =0;
 
 int next_state(int current_state, char *current_char) {
 	
 	int next_class = -1;
-	
+	bool nintyseven = (*current_char >= 97 && *current_char <= 122);
+	bool sixtyfive = (*current_char >= 65 && *current_char <=90);
+	bool fourtyeight = (*current_char >= 48 && *current_char <= 57);
+			
 	for(int i=0;;i++) {
 		int check_class = transfer[current_state][i];
 		char char_class = machine_states[check_class];
 	
+		
 		if(char_class > 122) {
-			onetwenty++;
-			if(*current_char >= 97 && *current_char <= 122){
-				nintyseven++;
-			}
-			if(*current_char >= 65 && *current_char <=90){
-				sixtyfice++;
-			}
-			if(*current_char >= 48 && *current_char <= 57){
-				fourtyeight++;
-			}
-			if(char_class == '{'){
-				charclassone++;
-			}
-			if(char_class == '|'){
-				charclasstwo++;
-			}
-			if(char_class == '~'){
-				charclassthree++;
-			}
-			if(char_class == ' '){
-				charclassfour++;
-			}
 			
 			if(char_class == '{' &&
 				(
-					(*current_char >= 97 && *current_char <= 122) ||
-					(*current_char >= 65 && *current_char <=90)
+					nintyseven || sixtyfive
 				)
 			) {
 				next_class = check_class;
 				break;
 			} else if(char_class == '}' &&
 				(
-					(*current_char >= 48 && *current_char <= 57)
+					fourtyeight
 				)
 			) {
 				next_class = check_class;
 				break;
 			} else if(char_class == '|' &&
 				(
-					(*current_char >= 97 && *current_char <= 122) ||
-					(*current_char >= 65 && *current_char <=90) || 
-					(*current_char >= 48 && *current_char <= 57)
+					nintyseven || sixtyfive || fourtyeight
 				)
 			) {
 				next_class = check_class;
 				break;
 			} else if(char_class == '~' &&
 				(
-					(*current_char >= 97 && *current_char <= 102) ||
-					(*current_char >= 65 && *current_char <=70) || 
-					(*current_char >= 48 && *current_char <= 57)
+					nintyseven || sixtyfive || fourtyeight
 				)
 			) {
 				next_class = check_class;
