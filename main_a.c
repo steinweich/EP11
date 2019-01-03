@@ -289,27 +289,53 @@ void new_word() {
 	if(hashfunc > 0) {
 		unsigned long r = 0;
 		
-		if(hashfunc == 1) {
-			methodone++;
+		/*if(hashfunc == 1) {
+			//methodone++;
+			//6208419
 			// printf("ID\n");
 			r = (int)hash(yytext);
 		} else if(hashfunc == 2) {
-			methodtwo++;
+			//methodtwo++;
+			//1350000
 			// printf("INT\n");
 			r = (int)strtoul(yytext, NULL, 10) ^ 0x8000;
 		} else if(hashfunc == 3) {
-			methodthree++;
+			//methodthree++;
+			//30000
 			// printf("HEX\n");
 			r = (int)strtoul(yytext+1, NULL, 16) ^ 0x4000;
 		} else if(hashfunc > 0) {
-			methodfour++;
+			//methodfour++;
+			//19781581
 			r = hashfunc;
 		} else {
-			methodfive++;
+			//methodfive++;
+			//0
+			// not reachable
 			printf("Lexical error. Unrecognised input \"%s\"\n", yytext); exit(1);
 			exit(1);
 		}
-		// printf(">%s< \t %lu\n", yytext, r);
+		// printf(">%s< \t %lu\n", yytext, r);*/
+		
+		
+		if(hashfunc > 3){
+			r = hashfunc;
+		} else if(hashfunc == 1) {
+			//methodone++;
+			//6208419
+			// printf("ID\n");
+			r = (int)hash(yytext);
+		} else if(hashfunc == 2) {
+			//methodtwo++;
+			//1350000
+			// printf("INT\n");
+			r = (int)strtoul(yytext, NULL, 10) ^ 0x8000;
+		} else if(hashfunc == 3) {
+			//methodthree++;
+			//30000
+			// printf("HEX\n");
+			r = (int)strtoul(yytext+1, NULL, 16) ^ 0x4000;
+		} 
 		
 		// TOTAL
 		total_hash = (total_hash + r) * hashmult;
