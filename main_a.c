@@ -199,6 +199,15 @@ int state_machine_state = 0;
 
 // Suche anhand des derzeitigen Characters und des gegebenen zustands den naechsten zustand
 // -1 wenn kein passender zustand gefunden (bzw. wort zu ende)
+int onetwenty = 0;
+int nintyseven = 0;
+int sixtyfice = 0;
+int fourtyeight = 0;
+int charclassone = 0;
+int charclasstwo=0;
+int charclassthree = 0;
+int charclassfour =0;
+
 int next_state(int current_state, char *current_char) {
 	
 	int next_class = -1;
@@ -208,6 +217,29 @@ int next_state(int current_state, char *current_char) {
 		char char_class = machine_states[check_class];
 	
 		if(char_class > 122) {
+			onetwenty++;
+			if(*current_char >= 97 && *current_char <= 122){
+				nintyseven++;
+			}
+			if(*current_char >= 65 && *current_char <=90){
+				sixtyfice++;
+			}
+			if(*current_char >= 48 && *current_char <= 57){
+				fourtyeight++;
+			}
+			if(char_class == '{'){
+				charclassone++;
+			}
+			if(char_class == '|'){
+				charclasstwo++;
+			}
+			if(char_class == '~'){
+				charclassthree++;
+			}
+			if(char_class == ' '){
+				charclassfour++;
+			}
+			
 			if(char_class == '{' &&
 				(
 					(*current_char >= 97 && *current_char <= 122) ||
@@ -318,14 +350,13 @@ void append_char(char *c) {
 	yylen += 1;	
 	yytext[yylen] = '\0';
 }
-
 // Wechsle in den naechsten Status - oder brich bei ungueltigem character ab
 unsigned long next_state_machine(char *current_char) {
 	
 	int next_class = next_state(state_machine_state, current_char);
 	
 	if(next_class == -1) { // Kein naechster status gefunden - wahrscheinlich neues wort
-		printf("Panic");
+
 		if(yylen > 0) {
 			new_word();
 		}
@@ -341,7 +372,7 @@ unsigned long next_state_machine(char *current_char) {
 			exit(1);
 		}
 	} else {
-		
+
 		if(next_class == 0) { // Neues Wort wurde angefangen
 			if(yylen > 0) {
 				new_word();
@@ -397,6 +428,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	printf("%lx\n", total_hash);
-	
+	printf("onetwenty: %i nintyseven: %i sixtyfice: %i fourtyeight: %i",onetwenty, nintyseven, sixtyfice, fourtyeight)
+		printf("charclassone: %i charclasstwo: %i charclassthree: %i charclassfour: %i",charclassone, charclasstwo, charclassthree, charclassfour)
 	return 0;
 }
