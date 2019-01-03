@@ -200,6 +200,7 @@ int methodone = 0;
 int methodtwo = 0;
 int methodthree = 0;
 int methodfour = 0;
+int methodfive = 0;
 // Suche anhand des derzeitigen Characters und des gegebenen zustands den naechsten zustand
 // -1 wenn kein passender zustand gefunden (bzw. wort zu ende)
 
@@ -215,7 +216,8 @@ int next_state(int current_state, char *current_char) {
 	
 		
 		if(char_class > 122) {
-			methodone++;
+			//methodone++;
+			//57588938
 			if(char_class == '|' &&
 				(
 					(*current_char >= 97 && *current_char <= 122) ||
@@ -252,19 +254,22 @@ int next_state(int current_state, char *current_char) {
 			}
 			
 		} else if(char_class == ' ') {
-			methodtwo++;
+			//methodtwo++;
+			//32450000
 			if(*current_char == ' ' || *current_char == '\n' || *current_char == '\t') {
 				next_class = check_class;
 			}
 			break;
 		} else if(char_class == '!') {
-			methodthree++;
+			//methodthree++;
+			//1690000
 			if(*current_char != '\n') {
 				next_class = check_class;
 				break;
 			}
 		} else {
-			methodfour++;
+			//methodfour++;
+			//490287065
 			if(*current_char == char_class) {
 				next_class = check_class;
 				break;
@@ -285,17 +290,22 @@ void new_word() {
 		unsigned long r = 0;
 		
 		if(hashfunc == 1) {
+			methodone++;
 			// printf("ID\n");
 			r = (int)hash(yytext);
 		} else if(hashfunc == 2) {
+			methodtwo++;
 			// printf("INT\n");
 			r = (int)strtoul(yytext, NULL, 10) ^ 0x8000;
 		} else if(hashfunc == 3) {
+			methodthree++;
 			// printf("HEX\n");
 			r = (int)strtoul(yytext+1, NULL, 16) ^ 0x4000;
 		} else if(hashfunc > 0) {
+			methodfour++;
 			r = hashfunc;
 		} else {
+			methodfive++;
 			printf("Lexical error. Unrecognised input \"%s\"\n", yytext); exit(1);
 			exit(1);
 		}
@@ -408,7 +418,7 @@ int main(int argc, char *argv[]) {
 	if(yylen > 0) {
 		new_word();
 	}
-	printf("one: %i two: %i three: %i four: %i", methodone, methodtwo, methodthree, methodfour);
+	printf("one: %i two: %i three: %i four: %i five: %i", methodone, methodtwo, methodthree, methodfour, methodfive);
 	printf("%lx\n", total_hash);
 	
 	return 0;
