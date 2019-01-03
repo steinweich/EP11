@@ -253,24 +253,24 @@ int methodsix = 0;
 int next_state(int current_state, unsigned char *current_char) {
 	
 	if(current_state != 2 && (*current_char == ' ' || *current_char == '\n' || *current_char == '\t')) { // Not comment mode + whitespace -> deal
-		methodone++;
+		//methodone++;
 		new_word();
 		return 0;
+	}else if(current_state > 2 && current_state <= 12) {
+		//methodthree++;
+		return -1; // Cannot close the old word and return 0 because this char needs to be dealt with
 	} else if(current_state == 2) { // Comment mode
-	methodtwo++;
+	//methodtwo++;
 		if(*current_char != '\n') { // Ignore the char
-		methodfive++;
+		//methodfive++;
 			return 2;
 		} else {
-			methodsix++;
-			// new_word(); // Reset and start from scratch
-			yytext[0] = '\0';
-			yylen = 2;
+			//methodsix++;
+			 new_word(); // Reset and start from scratch
+			//yytext[0] = '\0';
+			//yylen = 2;
 			return 0;
 		}
-	} else if(current_state > 2 && current_state <= 12) {
-		methodthree++;
-		return -1; // Cannot close the old word and return 0 because this char needs to be dealt with
 	} else { 
 		methodfour++;
 		int i=0;
