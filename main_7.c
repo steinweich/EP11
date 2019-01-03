@@ -253,21 +253,26 @@ int methodsix = 0;
 int next_state(int current_state, unsigned char *current_char) {
 	
 	if(current_state != 2 && (*current_char == ' ' || *current_char == '\n' || *current_char == '\t')) { // Not comment mode + whitespace -> deal
+		methodone++;
 		new_word();
 		return 0;
 	} else if(current_state == 2) { // Comment mode
+	methodtwo++;
 		if(*current_char != '\n') { // Ignore the char
+		methodfive++;
 			return 2;
 		} else {
+			methodsix++;
 			// new_word(); // Reset and start from scratch
 			yytext[0] = '\0';
 			yylen = 2;
 			return 0;
 		}
 	} else if(current_state > 2 && current_state <= 12) {
+		methodthree++;
 		return -1; // Cannot close the old word and return 0 because this char needs to be dealt with
 	} else { 
-	
+		methodfour++;
 		int i=0;
 		int check_class = transfer[current_state][i];
 		while(check_class >= 0) {
@@ -281,7 +286,7 @@ int next_state(int current_state, unsigned char *current_char) {
 						(*current_char >= 48 && *current_char <= 57)
 					)
 				) {
-					methodone++;
+					
 					return check_class;
 				} else if(char_class == '{' &&
 					(
@@ -289,14 +294,14 @@ int next_state(int current_state, unsigned char *current_char) {
 						(*current_char >= 65 && *current_char <=90)
 					)
 				) {
-					methodtwo++;
+					
 					return check_class;
 				} else if(char_class == '}' &&
 					(
 						(*current_char >= 48 && *current_char <= 57)
 					)
 				) {
-					methodthree++;
+					
 					return check_class;
 				} else if(char_class == '~' &&
 					(
@@ -305,19 +310,19 @@ int next_state(int current_state, unsigned char *current_char) {
 						(*current_char >= 48 && *current_char <= 57)
 					)
 				) {
-					methodfour++;
+					
 					return check_class;
-				} else if(char_class == '\x7F' &&
+				}/* else if(char_class == '\x7F' &&
 					(*current_char != '\n')
 				) {
-					methodfive++;
+					
 					return check_class;
 				} else if(char_class == (unsigned char)'\x80' &&
 					(*current_char == ' ' || *current_char == '\t' || *current_char == '\n')
-				) {
-					methodsix++;
+				) {					
+					
 					return check_class;
-				}
+				} never reached in large file !!!!*/
 			} else {
 				if (*current_char == char_class) {
 					return check_class;
