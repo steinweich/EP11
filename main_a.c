@@ -264,7 +264,7 @@ int next_state(int current_state, char *current_char) {
 				break;
 			}
 		} else {
-			methodfour++:
+			methodfour++;
 			if(*current_char == char_class) {
 				next_class = check_class;
 				break;
