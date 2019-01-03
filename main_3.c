@@ -21,10 +21,7 @@ unsigned long hash(char *s)
 	for (p=s; *p; p++) {
 		
 		r = (r+*p)*hashmult;
-		// printf("%c %lu\n", *p, r);
 	}
-	
-	//printf("ID %s!\n", s);
 	return r;
 }
 
@@ -39,11 +36,11 @@ unsigned long hash(char *s)
 // } = 0-9
 // | = a-zA-Z0-9
 // ~ = afAf0-9
-//   = Whitespace (\n\t ) bzw. Start-Zustand
-// ! = . (ausgenommen \n)
-//                                      1------------------------2----------------3---------     4----5--6
-const unsigned char *machine_states = " eaoirtwdvn:;(),<#[]-+*${}nlrrffnehhoao=-|~dsrtteirt\x7f""eaunlyren";
-//                                                             2526             1742      10     52  5  31
+// \x80 = Whitespace ( \n\t)
+// \x7f = . (ausgenommen \n)
+//                                      1     -------------------------2----------------3---------     4----5--6
+const unsigned char *machine_states = " \x80""eaoirtwdvn:;(),<#[]-+*${}nlrrffnehhoao=-|~dsrtteirt\x7f""eaunlyren";
+//                                                                   2627             1744      10     54  5  31
 
 // Welche Hash-Funktion ausgeführt werden soll pro state der Maschine (index des arrays = index von machine_states)
 // -1 = Ungueltig
@@ -52,9 +49,10 @@ const unsigned char *machine_states = " eaoirtwdvn:;(),<#[]-+*${}nlrrffnehhoao=-
 // 2 = strtoul(yytext, NULL, 10) ^ 0x8000;
 // 3 = strtoul(yytext+1, NULL, 16) ^ 0x4000;
 // >3 = genau jener wert
-const int hash_function[62] = {
-	0,
+const int hash_function[63] = {
+	-1,
 	
+	0, // Whitespace
 	1,
 	1,
 	1,
@@ -125,20 +123,21 @@ const int hash_function[62] = {
 
 // Von welchen Zustaenden man in welche Zustaende darf (alle zahlen und indizes sind indizes von machine_states)
 // Jeder Zustand wird angenommen und 0 ist immer Start / Ende des Wortes etc. und wird daher als letztes ueberprueft
-const int transfer[62][26] = {
-	{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0 },
+const int transfer[63][27] = {
+	{ 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 1, -1 },
 	
-	{ 26, 27, 41, -1 }, //1
-	{ 28, 41, -1 },
-	{ 29, 30, 41, -1 },
-	{ 31, 32, 41, -1 },
-	{ 33, 41, -1},
-	{ 34, 41, -1},
-	{ 35, 41, -1},
-	{ 36, 41, -1},
-	{ 37, 41, -1},
-	{ 38, 41, -1},
-	{ 39, -1 },
+	{ 1, -1 }, //1
+	{ 27, 28, 42, -1 }, 
+	{ 29, 42, -1 },
+	{ 30, 31, 42, -1 },
+	{ 32, 33, 42, -1 },
+	{ 34, 42, -1},
+	{ 35, 42, -1},
+	{ 36, 42, -1},
+	{ 37, 42, -1},
+	{ 38, 42, -1},
+	{ 39, 42, -1},
+	{ 40, -1 },
 	{ -1}, 
 	{ -1},
 	{ -1},
@@ -147,68 +146,65 @@ const int transfer[62][26] = {
 	{ -1}, 
 	{ -1}, 
 	{ -1},
-	{ 40, -1},
+	{ 41, -1},
 	{ -1}, 
 	{ -1},
+	{ 43, -1 },
 	{ 42, -1 },
-	{ 41, -1 },
-	{ 25, -1 }, // 25
+	{ 26, -1 }, // 26
 	
-	{ 43, 41, -1 }, //26
-	{ 44, 41, -1 },
-	{ 45, 41, -1 },
-	{ 41, -1},
-	{ 41, -1},
-	{ 41, -1},
-	{ 46, 41, -1},
-	{ 47, 41, -1},
-	{ 48, 41, -1},
-	{ 49, 41, -1},
-	{ 41, -1},
-	{ 50, 41, -1},
-	{ 51, 41, -1},
+	{ 44, 42, -1 }, //27
+	{ 45, 42, -1 },
+	{ 46, 42, -1 },
+	{ 42, -1},
+	{ 42, -1},
+	{ 42, -1},
+	{ 47, 42, -1},
+	{ 48, 42, -1},
+	{ 49, 42, -1},
+	{ 50, 42, -1},
+	{ 42, -1},
+	{ 51, 42, -1},
+	{ 52, 42, -1},
 	{ -1 },
-	{ 52, -1 },
-	{ 41, -1 },
-	{ 42, -1 }, //42
+	{ 53, -1 },
+	{ 42, -1 },
+	{ 43, -1 }, //43
 	
-	{ 41, -1}, //43
-	{ 53, 41, -1},
-	{ 54, 41, -1},
-	{ 41, -1},
-	{ 55, 41, -1},
-	{ 56, 41, -1},
-	{ 57, 41, -1},
-	{ 41, -1}, 
-	{ 41, -1},
-	{ 52, -1}, // 52
+	{ 42, -1}, //44
+	{ 54, 42, -1},
+	{ 55, 42, -1},
+	{ 42, -1},
+	{ 56, 42, -1},
+	{ 57, 42, -1},
+	{ 58, 42, -1},
+	{ 42, -1}, 
+	{ 42, -1},
+	{ 53, -1}, // 53
 	
-	{ 41, -1}, //53
-	{ 58, 41, -1},
-	{ 59, 41, -1},
-	{ 41, -1},
-	{ 60, 41, -1}, // 57
+	{ 42, -1}, //54
+	{ 59, 42, -1},
+	{ 60, 42, -1},
+	{ 42, -1},
+	{ 61, 42, -1}, // 58
 	
-	{ 41, -1 }, // 58
-	{ 61, 41, -1},
-	{ 41, -1}, // 60
+	{ 42, -1 }, // 59
+	{ 62, 42, -1},
+	{ 42, -1}, // 61
 	
-	{ 41, -1} // 61
+	{ 42, -1} // 62
 };
 
 int state_machine_state = 0;
 
 // Suche anhand des derzeitigen Characters und des gegebenen zustands den naechsten zustand
 // -1 wenn kein passender zustand gefunden (bzw. wort zu ende)
-int next_state(int current_state, char *current_char) {
-	
-	int next_class = -1;
+int next_state(int current_state, unsigned char *current_char) {
 	
 	int i=0;
 	int check_class = transfer[current_state][i];
 	while(check_class >= 0) {
-		char char_class = machine_states[check_class];
-	
+		unsigned char char_class = machine_states[check_class];
 		if(char_class > 122) {
 			if(char_class == '{' &&
 				(
@@ -216,15 +212,13 @@ int next_state(int current_state, char *current_char) {
 					(*current_char >= 65 && *current_char <=90)
 				)
 			) {
-				next_class = check_class;
-				break;
+				return check_class;
 			} else if(char_class == '}' &&
 				(
 					(*current_char >= 48 && *current_char <= 57)
 				)
 			) {
-				next_class = check_class;
-				break;
+				return check_class;
 			} else if(char_class == '|' &&
 				(
 					(*current_char >= 97 && *current_char <= 122) ||
@@ -232,8 +226,7 @@ int next_state(int current_state, char *current_char) {
 					(*current_char >= 48 && *current_char <= 57)
 				)
 			) {
-				next_class = check_class;
-				break;
+				return check_class;
 			} else if(char_class == '~' &&
 				(
 					(*current_char >= 97 && *current_char <= 102) ||
@@ -241,73 +234,69 @@ int next_state(int current_state, char *current_char) {
 					(*current_char >= 48 && *current_char <= 57)
 				)
 			) {
-				next_class = check_class;
-				break;
+				return check_class;
 			} else if(char_class == '\x7F' &&
 				(*current_char != '\n')
 			) {
-				next_class = check_class;
-				break;
+				return check_class;
+			} else if(char_class == (unsigned char)'\x80' &&
+				(*current_char == ' ' || *current_char == '\t' || *current_char == '\n')
+			) {
+				return check_class;
 			}
 		} else {
-			if(char_class == ' ' &&
-				(
-					*current_char == ' ' || *current_char == '\t' || *current_char == '\n'
-				)
-			) {
-				next_class = check_class;
-				break;
-			} else if (*current_char == char_class) {
-				next_class = check_class;
-				break;
+			if (*current_char == char_class) {
+				return check_class;
 			}
 		}
 		i++;
 		check_class = transfer[current_state][i];
 	}
 	
-	return next_class;	
-	
+	return -1;
 }
 
 // Berechne den Hash wenn ein wort gefunden wurde
 // Case instead of if
 void new_word() {
 	
-	int hashfunc = hash_function[state_machine_state];
-	if(hashfunc > 0) {
-		unsigned long r = 0;
-		
-		switch (hashfunc) {
-			case 1:
-				r = (int)hash(yytext);
-				break;
-			case 2:
-				r = (int)strtoul(yytext, NULL, 10) ^ 0x8000;
-				break;
-			case 3:
-				r = (int)strtoul(yytext+1, NULL, 16) ^ 0x4000;
-				break;
-			default:
-				r = hashfunc;
+	if(yylen > 0) {
+		int hashfunc = hash_function[state_machine_state];
+		if(hashfunc > 0) {
+			unsigned long r = 0;
+			
+			switch (hashfunc) {
+				case 1:
+					r = (int)hash(yytext);
+					break;
+				case 2:
+					r = (int)strtoul(yytext, NULL, 10) ^ 0x8000;
+					break;
+				case 3:
+					r = (int)strtoul(yytext+1, NULL, 16) ^ 0x4000;
+					break;
+				default:
+					r = hashfunc;
+			}
+			 
+			// printf(">%s< \t %lu\n", yytext, r);
+			// TOTAL
+			total_hash = (total_hash + r) * hashmult;
+	
+		} else if(hashfunc == -1) {
+			printf("H Lexical error. Unrecognised input \"%s\"\n", yytext); exit(1);
+			exit(1);
 		}
-		
-		// TOTAL
-		total_hash = (total_hash + r) * hashmult;
-
-	} else if(hashfunc == -1) {
-		printf("Lexical error. Unrecognised input \"%s\"\n", yytext); exit(1);
-		exit(1);
+	
+		yytext[0] = '\0';
+		yylen = 0;
 	}
-
-	yytext[0] = '\0';
-	yylen = 0;
 }
 
-void append_char(char *c) {
+void append_char(unsigned char *c) {
 	
 	if(yylen+2 > maxbuf) {
-		char *tmp = realloc(yytext, yylen + 2);
+		unsigned char *tmp = realloc(yytext, yylen + 2);
 		yytext = tmp;
 		maxbuf = yylen + 2;
 	}
@@ -318,31 +307,24 @@ void append_char(char *c) {
 }
 
 // Wechsle in den naechsten Status - oder brich bei ungueltigem character ab
-unsigned long next_state_machine(char *current_char) {
+unsigned long next_state_machine(unsigned char *current_char) {
 	
 	int next_class = next_state(state_machine_state, current_char);
 	
-	if(next_class <= 0) { // Kein naechster status gefunden - wahrscheinlich neues wort
+	if(next_class == -1) { // Kein naechster Status
+		new_word(); // Berechne Hash fuer derzeitiges wort
 		
-		if(yylen > 0) {
-			new_word();
-		}
+		next_class = next_state(0, current_char); //zurueck zum start
+		append_char(current_char);
 		
 		if(next_class == -1) {
-			next_class = next_state(0, current_char); // Probiere es vom start-zustand nochmals
-		
-			// Verlaengere Wort (bzw. fange neu an)		
-			append_char(current_char);
-		
-			if(next_class == -1) { // Ungueltiger character
-
-				printf("Lexical error. Unrecognised input \"%s\"\n", yytext); exit(1);
-				exit(1);
-			}
+			printf("N Lexical error. Unrecognised input \"%s\"\n", yytext); exit(1);
+			exit(1);
 		}
-	} else { // Verlaengere Wort
+	} else {
 		append_char(current_char);
 	}
+	// printf("A %d -> %d %c %c\n", state_machine_state, next_class, machine_states[next_class], *current_char);
 	state_machine_state = next_class;
 }
 
@@ -377,7 +359,10 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	
-	char *file_content = read_file(argv[1]);
+	//for(int i=0; i < strlen(machine_states); i++)
+	//	printf("%c %d\n", machine_states[i], machine_states[i]);
+	
+	unsigned char *file_content = read_file(argv[1]);
 
 	int filelen = strlen(file_content);
 
@@ -385,9 +370,7 @@ int main(int argc, char *argv[]) {
 		next_state_machine(&file_content[i]);
 	}
 	
-	if(yylen > 0) {
-		new_word();
-	}
+	new_word();
 	
 	printf("%lx\n", total_hash);
 	
