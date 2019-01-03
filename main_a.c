@@ -196,12 +196,15 @@ const int transfer[62][26] = {
 };
 
 int state_machine_state = 0;
-
+int methodone = 0;
+int methodtwo = 0;
+int methodthree = 0;
+int methodfour = 0;
 // Suche anhand des derzeitigen Characters und des gegebenen zustands den naechsten zustand
 // -1 wenn kein passender zustand gefunden (bzw. wort zu ende)
 
 int next_state(int current_state, char *current_char) {
-	
+	methodone++;
 	int next_class = -1;
 	
 			
@@ -270,7 +273,7 @@ int next_state(int current_state, char *current_char) {
 
 // Berechne den Hash wenn ein wort gefunden wurde
 void new_word() {
-	
+	methodtwo++;
 	int hashfunc = hash_function[state_machine_state];
 	if(hashfunc > 0) {
 		unsigned long r = 0;
@@ -307,7 +310,7 @@ void new_word() {
 
 void append_char(char *c) {
 	// printf("%d %d %c\n", yylen+2, maxbuf, *c);
-	
+	mtehodthree++;
 	if(yylen+2 > maxbuf) {
 		// printf("Realloc\n");
 		char *tmp = realloc(yytext, yylen + 2);
@@ -323,7 +326,7 @@ void append_char(char *c) {
 }
 // Wechsle in den naechsten Status - oder brich bei ungueltigem character ab
 unsigned long next_state_machine(char *current_char) {
-	
+	methodfour++;
 	int next_class = next_state(state_machine_state, current_char);
 	
 	if(next_class == -1) { // Kein naechster status gefunden - wahrscheinlich neues wort
@@ -397,7 +400,7 @@ int main(int argc, char *argv[]) {
 	if(yylen > 0) {
 		new_word();
 	}
-	
+	printf("one: %i two: %i three: %i four: %i", methodone, methodtwo, methodthree, methodfour);
 	printf("%lx\n", total_hash);
 	
 	return 0;
