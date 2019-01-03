@@ -204,7 +204,8 @@ int methodfour = 0;
 // -1 wenn kein passender zustand gefunden (bzw. wort zu ende)
 
 int next_state(int current_state, char *current_char) {
-	methodone++;
+	//methodone++;
+	//106281833
 	int next_class = -1;
 	
 			
@@ -214,6 +215,7 @@ int next_state(int current_state, char *current_char) {
 	
 		
 		if(char_class > 122) {
+			methodone++;
 			if(char_class == '|' &&
 				(
 					(*current_char >= 97 && *current_char <= 122) ||
@@ -250,16 +252,19 @@ int next_state(int current_state, char *current_char) {
 			}
 			
 		} else if(char_class == ' ') {
+			methodtwo++;
 			if(*current_char == ' ' || *current_char == '\n' || *current_char == '\t') {
 				next_class = check_class;
 			}
 			break;
 		} else if(char_class == '!') {
+			methodthree++;
 			if(*current_char != '\n') {
 				next_class = check_class;
 				break;
 			}
 		} else {
+			methodfour++:
 			if(*current_char == char_class) {
 				next_class = check_class;
 				break;
@@ -273,7 +278,8 @@ int next_state(int current_state, char *current_char) {
 
 // Berechne den Hash wenn ein wort gefunden wurde
 void new_word() {
-	methodtwo++;
+	//methodtwo++;
+	//27560000
 	int hashfunc = hash_function[state_machine_state];
 	if(hashfunc > 0) {
 		unsigned long r = 0;
@@ -310,7 +316,8 @@ void new_word() {
 
 void append_char(char *c) {
 	// printf("%d %d %c\n", yylen+2, maxbuf, *c);
-	methodthree++;
+	//methodthree++;
+	//73831833
 	if(yylen+2 > maxbuf) {
 		// printf("Realloc\n");
 		char *tmp = realloc(yytext, yylen + 2);
@@ -326,7 +333,8 @@ void append_char(char *c) {
 }
 // Wechsle in den naechsten Status - oder brich bei ungueltigem character ab
 unsigned long next_state_machine(char *current_char) {
-	methodfour++;
+	//methodfour++;
+	//88961833
 	int next_class = next_state(state_machine_state, current_char);
 	
 	if(next_class == -1) { // Kein naechster status gefunden - wahrscheinlich neues wort
