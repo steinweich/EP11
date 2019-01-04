@@ -4,7 +4,7 @@
 
 char* yytext = NULL; // last matched string
 int yylen = 0;
-int maxbuf = -2;
+int maxbuf = 0;
 
 /*****************************************/
 /***** COPY+PASTE FROM LEX PROGRAM *******/
@@ -320,10 +320,10 @@ int next_state(int current_state, unsigned char *current_char) {
 
 void append_char(unsigned char *c) {
 	//220m cycles let yylen start with 2 and yylen >0 be yylen >2
-	if(yylen > maxbuf) {
+	if(yylen+2 > maxbuf) {
 		unsigned char *tmp = realloc(yytext, yylen+2);
-		yytext = tmp;		
-		maxbuf = yylen+2;			
+		yytext = tmp;
+		maxbuf = yylen;
 	}
 	
 	yytext[yylen] = *c;
