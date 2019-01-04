@@ -4,7 +4,7 @@
 
 char* yytext = NULL; // last matched string
 int yylen = 0;
-int maxbuf = 0;
+int maxbuf = -2;
 
 /*****************************************/
 /***** COPY+PASTE FROM LEX PROGRAM *******/
@@ -322,12 +322,8 @@ void append_char(unsigned char *c) {
 	//220m cycles let yylen start with 2 and yylen >0 be yylen >2
 	if(yylen > maxbuf) {
 		unsigned char *tmp = realloc(yytext, yylen+2);
-		yytext = tmp;
-		if(yylen-2 <=0){
-			maxbuf = yylen+2;
-		} else {
-			maxbuf = yylen-2;
-		}		
+		yytext = tmp;		
+		maxbuf = yylen+2;			
 	}
 	
 	yytext[yylen] = *c;
