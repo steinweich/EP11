@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 char* yytext = NULL; // last matched string
-int yylen = 2;
+int yylen = 0;
 int maxbuf = 0;
 
 /*****************************************/
@@ -237,7 +237,7 @@ void new_word() {
 		}
 	
 		yytext[0] = '\0';
-		yylen = 2;
+		yylen = 0;
 	}
 }
 
@@ -254,7 +254,7 @@ int next_state(int current_state, unsigned char *current_char) {
 		} else {
 			// new_word(); // Reset and start from scratch
 			yytext[0] = '\0';
-			yylen = 2;
+			yylen = 0;
 			return 0;
 		}
 	} else if(current_state > 2 && current_state <= 12) {
@@ -320,10 +320,10 @@ int next_state(int current_state, unsigned char *current_char) {
 
 void append_char(unsigned char *c) {
 	//220m cycles let yylen start with 2 and yylen >0 be yylen >2
-	if(yylen > maxbuf) {
-		unsigned char *tmp = realloc(yytext, yylen);
+	if(yylen+2 > maxbuf) {
+		unsigned char *tmp = realloc(yytext, yylen+2);
 		yytext = tmp;
-		maxbuf = yylen;
+		maxbuf = yylen+2;
 	}
 	
 	yytext[yylen] = *c;
