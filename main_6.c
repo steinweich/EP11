@@ -320,10 +320,10 @@ int next_state(int current_state, unsigned char *current_char) {
 
 void append_char(unsigned char *c) {
 	//220m cycles let yylen start with 2 and yylen >0 be yylen >2
-	if(yylen+2 > maxbuf) {
+	if(yylen > maxbuf) {
 		unsigned char *tmp = realloc(yytext, yylen+2);
 		yytext = tmp;
-		maxbuf = yylen+2;
+		maxbuf = yylen-2;
 	}
 	
 	yytext[yylen] = *c;
