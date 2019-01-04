@@ -389,8 +389,8 @@ int main(int argc, char *argv[]) {
 	//	printf("%c %d\n", machine_states[i], machine_states[i]);
 	
 	unsigned char *file_content = read_file(argv[1]);
-
-	int filelen = strlen(file_content);
+	//6 m cycles 
+	//int filelen = strlen(file_content);
 
 	unsigned char *c;
 	
