@@ -323,7 +323,7 @@ void append_char(unsigned char *c) {
 	if(yylen+2 > maxbuf) {
 		unsigned char *tmp = realloc(yytext, yylen+2);
 		yytext = tmp;
-		maxbuf = yylen;
+		maxbuf = yylen+2;
 	}
 	
 	yytext[yylen] = *c;
