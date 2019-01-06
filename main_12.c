@@ -113,8 +113,9 @@ const int hash_function[61] = {
 // Jeder Zustand wird angenommen und 0 ist immer Start / Ende des Wortes etc. und wird daher als letztes ueberprueft
 
 //Changed from int to char (needs less space in memory: 1/4 -> should be kept more easily in cache)
-const char transfer[61][26] = {
-	{ 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, -1 },
+const char transfer[61][4] = {
+	//{ 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, -1 },
+	{},
 	
 	{ }, // 1
 	{ -1}, // 2
@@ -254,58 +255,84 @@ int next_state(int current_state, unsigned char *current_char) {
 		return -1; // Cannot close the old word and return 0 because this char needs to be dealt with
 	} else { 
 	
-		int i=0;
-		
-		int check_class = transfer[current_state][i];
-		while(check_class >= 0) {
-			unsigned char char_class = machine_states[check_class];
-			if(char_class > 122) {
-				//100m cycles changed class ordering
-				if(char_class == '|' &&
-					(
-						(*current_char >= 97 && *current_char <= 122) ||
-						(*current_char >= 65 && *current_char <=90) || 
-						(*current_char >= 48 && *current_char <= 57)
-					)
-				) {
-					return check_class;
-				} else if(char_class == '{' &&
-					(
-						(*current_char >= 97 && *current_char <= 122) ||
-						(*current_char >= 65 && *current_char <=90)
-					)
-				) {
-					return check_class;
-				} else if(char_class == '}' &&
-					(
-						(*current_char >= 48 && *current_char <= 57)
-					)
-				) {
-					return check_class;
-				} else if(char_class == '~' &&
-					(
-						(*current_char >= 97 && *current_char <= 102) ||
-						(*current_char >= 65 && *current_char <=70) || 
-						(*current_char >= 48 && *current_char <= 57)
-					)
-				) {
-					return check_class;
-				} /* else if(char_class == '\x7F' &&
-					(*current_char != '\n')
-				) {
-					return check_class;
-				} else if(char_class == (unsigned char)'\x80' &&
-					(*current_char == ' ' || *current_char == '\t' || *current_char == '\n')
-				) {
-					return check_class;
-				} // */
-			} else {
-				if (*current_char == char_class) {
-					return check_class;
+		if(current_state > 0) {
+			int i=0;
+			int check_class = transfer[current_state][i];
+			while(check_class >= 0) {
+				unsigned char char_class = machine_states[check_class];
+				if(char_class > 122) {
+					//100m cycles changed class ordering
+					if(char_class == '|' &&
+						(
+							(*current_char >= 97 && *current_char <= 122) ||
+							(*current_char >= 65 && *current_char <=90) || 
+							(*current_char >= 48 && *current_char <= 57)
+						)
+					) {
+						return check_class;
+					} else if(char_class == '{' &&
+						(
+							(*current_char >= 97 && *current_char <= 122) ||
+							(*current_char >= 65 && *current_char <=90)
+						)
+					) {
+						return check_class;
+					} else if(char_class == '}' &&
+						(
+							(*current_char >= 48 && *current_char <= 57)
+						)
+					) {
+						return check_class;
+					} else if(char_class == '~' &&
+						(
+							(*current_char >= 97 && *current_char <= 102) ||
+							(*current_char >= 65 && *current_char <=70) || 
+							(*current_char >= 48 && *current_char <= 57)
+						)
+					) {
+						return check_class;
+					} /* else if(char_class == '\x7F' &&
+						(*current_char != '\n')
+					) {
+						return check_class;
+					} else if(char_class == (unsigned char)'\x80' &&
+						(*current_char == ' ' || *current_char == '\t' || *current_char == '\n')
+					) {
+						return check_class;
+					} // */
+				} else {
+					if (*current_char == char_class) {
+						return check_class;
+					}
+				}
+				i++;
+				check_class = transfer[current_state][i];
+			}
+		} else {
+			for(int i=2; i < 27; i++) {
+				unsigned char char_class = machine_states[i];
+				if(char_class > 122) {
+					//100m cycles changed class ordering
+					if(char_class == '{' &&
+						(
+							(*current_char >= 97 && *current_char <= 122) ||
+							(*current_char >= 65 && *current_char <=90)
+						)
+					) {
+						return i;
+					} else if(char_class == '}' &&
+						(
+							(*current_char >= 48 && *current_char <= 57)
+						)
+					) {
+						return i;
+					}
+				} else {
+					if (*current_char == char_class) {
+						return i;
+					}
 				}
 			}
-			i++;
-			check_class = transfer[current_state][i];
 		}
 	}
 	
