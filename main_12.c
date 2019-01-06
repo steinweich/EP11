@@ -270,14 +270,14 @@ int next_state(int current_state, unsigned char *current_char) {
 						)
 					) {
 						return check_class;
-					} else if(char_class == '{' &&
+					} /* else if(char_class == '{' &&
 						(
 							(*current_char >= 97 && *current_char <= 122) ||
 							(*current_char >= 65 && *current_char <=90)
 						)
 					) {
 						return check_class;
-					} else if(char_class == '}' &&
+					} */ else if(char_class == '}' &&
 						(
 							(*current_char >= 48 && *current_char <= 57)
 						)
