@@ -348,8 +348,7 @@ void append_char(unsigned char *c) {
 //	}
 	
 	yytext[yylen] = *c;
-	yylen += 1;	
-	yytext[yylen] = '\0';
+	yytext[++yylen] = '\0';
 }
 
 // Wechsle in den naechsten Status - oder brich bei ungueltigem character ab
@@ -362,18 +361,14 @@ unsigned long next_state_machine(unsigned char *current_char) {
 		
 		//printf("R %d -> %d %c %c\n", state_machine_state, next_class, machine_states[next_class], *current_char);
 		next_class = next_state(0, current_char); //zurueck zum start
-		yytext[yylen] = *current_char;
-		yylen += 1;	
-		yytext[yylen] = '\0';
+		append_char(current_char);
 		
 		if(next_class == -1) {
 			printf("N Lexical error. Unrecognised input \"%s\"\n", yytext); exit(1);
 			exit(1);
 		}
 	} else if (next_class > 11) {
-		yytext[yylen] = *current_char;
-		yylen += 1;	
-		yytext[yylen] = '\0';
+		append_char(current_char);
 	}
 	//printf("A %d -> %d %c %c\n", state_machine_state, next_class, machine_states[next_class], *current_char);
 	state_machine_state = next_class;
