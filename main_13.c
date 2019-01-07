@@ -4,7 +4,7 @@
 
 char* yytext = NULL; // last matched string
 int yylen = 0;
-int maxbuf = 2;
+int maxbuf = 1;
 
 /*****************************************/
 /***** COPY+PASTE FROM LEX PROGRAM *******/
@@ -341,11 +341,11 @@ int next_state(int current_state, unsigned char *current_char) {
 
 void append_char(unsigned char *c) {
 	//220m cycles let yylen start with 2 and yylen >0 be yylen >2
-	if(yylen > maxbuf) {
-		unsigned char *tmp = realloc(yytext, yylen+2);
-		yytext = tmp;
-		maxbuf = yylen+2;
-	}
+//	if(yylen > maxbuf) {
+//		unsigned char *tmp = realloc(yytext, yylen+2);
+//		yytext = tmp;
+//		maxbuf = yylen+2;
+//	}
 	
 	yytext[yylen] = *c;
 	yylen += 1;	
@@ -405,7 +405,7 @@ int main(int argc, char *argv[]) {
 		printf("Usage: %s <INPUT-FILE>\n", argv[0]);
 		exit(1);
 	}
-	realloc(yytext, yylen+2);
+	yytext = realloc(yytext, 256);
 	//for(int i=0; i < strlen(machine_states); i++)
 	//	printf("%c %d\n", machine_states[i], machine_states[i]);
 	
