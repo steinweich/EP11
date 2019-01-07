@@ -339,17 +339,28 @@ int next_state(int current_state, unsigned char *current_char) {
 	return -1;
 }
 
+void append_char(unsigned char *c) {
+	//300m Instructions oh
+//	if(yylen > maxbuf) {
+//		unsigned char *tmp = realloc(yytext, yylen+2);
+//		yytext = tmp;
+//		maxbuf = yylen+2;
+//	}
+	//test
+
+}
+
 // Wechsle in den naechsten Status - oder brich bei ungueltigem character ab
 unsigned long next_state_machine(unsigned char *current_char) {
 	
 	int next_class = next_state(state_machine_state, current_char);
-	//ytext inlining and prefixing 100m cycles
+	//ytex
 	if(next_class == -1) { // Kein naechster Status
 		new_word(); // Berechne Hash fuer derzeitiges wort
 		
 		//printf("R %d -> %d %c %c\n", state_machine_state, next_class, machine_states[next_class], *current_char);
 		next_class = next_state(0, current_char); //zurueck zum start
-		yytext[yylen] = (int)current_char;
+		yytext[yylen] = current_char;
 //	yylen += 1;	
 		yytext[++yylen] = '\0';
 		
@@ -358,7 +369,7 @@ unsigned long next_state_machine(unsigned char *current_char) {
 			exit(1);
 		}
 	} else if (next_class > 11) {
-			yytext[yylen] = (int)current_char;
+			yytext[yylen] = current_char;
 //	yylen += 1;	
 			yytext[++yylen] = '\0';
 	} 
