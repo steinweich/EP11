@@ -210,9 +210,8 @@ int next_state(int current_state, char *current_char) {
 		if(char_class > 122) {
 			if(char_class == '{' &&
 				(
-					(*current_char >= 65 && *current_char <=90) ||
-					(*current_char >= 97 && *current_char <= 122) 
-					
+					(*current_char >= 97 && *current_char <= 122) ||
+					(*current_char >= 65 && *current_char <=90)
 				)
 			) {
 				next_class = check_class;
@@ -226,20 +225,18 @@ int next_state(int current_state, char *current_char) {
 				break;
 			} else if(char_class == '|' &&
 				(
-					(*current_char >= 48 && *current_char <= 57) ||
+					(*current_char >= 97 && *current_char <= 122) ||
 					(*current_char >= 65 && *current_char <=90) || 
-					(*current_char >= 97 && *current_char <= 122) 		
+					(*current_char >= 48 && *current_char <= 57)
 				)
 			) {
 				next_class = check_class;
 				break;
 			} else if(char_class == '~' &&
 				(
-					(*current_char >= 48 && *current_char <= 57) ||
+					(*current_char >= 97 && *current_char <= 102) ||
 					(*current_char >= 65 && *current_char <=70) || 
-					(*current_char >= 97 && *current_char <= 102) 
-
-
+					(*current_char >= 48 && *current_char <= 57)
 				)
 			) {
 				next_class = check_class;
