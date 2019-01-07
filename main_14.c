@@ -360,18 +360,18 @@ unsigned long next_state_machine(unsigned char *current_char) {
 		
 		//printf("R %d -> %d %c %c\n", state_machine_state, next_class, machine_states[next_class], *current_char);
 		next_class = next_state(0, current_char); //zurueck zum start
-		yytext[yylen] = *c;
+			yytext[yylen] = current_char;
 //	yylen += 1;	
-		yytext[++yylen] = '\0';
+	yytext[++yylen] = '\0';
 		
 		if(next_class == -1) {
 			printf("N Lexical error. Unrecognised input \"%s\"\n", yytext); exit(1);
 			exit(1);
 		}
 	} else if (next_class > 11) {
-		yytext[yylen] = *c;
+			yytext[yylen] = current_char;
 //	yylen += 1;	
-		yytext[++yylen] = '\0';
+	yytext[++yylen] = '\0';
 	} else {
 		printf("hallo");
 	}
