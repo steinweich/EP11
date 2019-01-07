@@ -200,7 +200,12 @@ void new_word() {
 				//6208419
 				// printf("ID\n");
 				//r = (int)hash(yytext);
-				total_hash = (total_hash + (int)hash(yytext)) * hashmult;
+				unsigned long r=0;
+				char *p;
+				for (p=yytext; *p; p++) {		
+					r = (r+*p)*hashmult;
+				}
+				total_hash = (total_hash + (int)r/*hash(yytext)*/) * hashmult;
 			} else if(hashfunc == 2) {
 				//methodtwo++;
 				//1350000
@@ -339,42 +344,29 @@ int next_state(int current_state, unsigned char *current_char) {
 	return -1;
 }
 
-void append_char(unsigned char *c) {
-	//300m Instructions oh
-//	if(yylen > maxbuf) {
-//		unsigned char *tmp = realloc(yytext, yylen+2);
-//		yytext = tmp;
-//		maxbuf = yylen+2;
-//	}
-	//test
-
-}
-
 // Wechsle in den naechsten Status - oder brich bei ungueltigem character ab
 unsigned long next_state_machine(unsigned char *current_char) {
 	
 	int next_class = next_state(state_machine_state, current_char);
-	
+	//ytext inlining and prefixing 100m cycles
 	if(next_class == -1) { // Kein naechster Status
 		new_word(); // Berechne Hash fuer derzeitiges wort
 		
 		//printf("R %d -> %d %c %c\n", state_machine_state, next_class, machine_states[next_class], *current_char);
 		next_class = next_state(0, current_char); //zurueck zum start
-			yytext[yylen] = current_char;
+		yytext[yylen] = (int)current_char;
 //	yylen += 1;	
-	yytext[++yylen] = '\0';
+		yytext[++yylen] = '\0';
 		
 		if(next_class == -1) {
 			printf("N Lexical error. Unrecognised input \"%s\"\n", yytext); exit(1);
 			exit(1);
 		}
 	} else if (next_class > 11) {
-			yytext[yylen] = current_char;
+			yytext[yylen] = (int)current_char;
 //	yylen += 1;	
-	yytext[++yylen] = '\0';
-	} else {
-		printf("hallo");
-	}
+			yytext[++yylen] = '\0';
+	} 
 	//printf("A %d -> %d %c %c\n", state_machine_state, next_class, machine_states[next_class], *current_char);
 	state_machine_state = next_class;
 }
