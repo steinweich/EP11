@@ -200,12 +200,7 @@ void new_word() {
 				//6208419
 				// printf("ID\n");
 				//r = (int)hash(yytext);
-				unsigned long r=0;
-				char *p;
-				for (p=yytext; *p; p++) {		
-					r = (r+*p)*hashmult;
-				}
-				total_hash = (total_hash + (int)r/*hash(yytext)*/) * hashmult;
+				total_hash = (total_hash + (int)hash(yytext)) * hashmult;
 			} else if(hashfunc == 2) {
 				//methodtwo++;
 				//1350000
